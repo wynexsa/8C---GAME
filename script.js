@@ -26,7 +26,7 @@ function playBuySound() {
 }
 
 let playerProfile = {
-    isim: "Öğrenci",
+    isim: "Sen (8-C)",
     toplamPara: parseInt(localStorage.getItem('oyuncu_para')) || 100,
     elmas: parseInt(localStorage.getItem('oyuncu_elmas')) || 10,
     xp: parseInt(localStorage.getItem('oyuncu_xp')) || 0,
@@ -47,22 +47,40 @@ function kaydet() {
 }
 
 const KARAKTER_TIPLERI = {
-    "1": { ad: "Normal Öğrenci", fiyat: 0, elmasFiyat: 0 },
-    "2": { ad: "Sınav Canavarı", fiyat: 150, elmasFiyat: 0 },
-    "3": { ad: "Arka Sıra Filozofu", fiyat: 250, elmasFiyat: 0 },
-    "4": { ad: "Veli", fiyat: 0, elmasFiyat: 5 }
+    "1": { ad: "Normal Öğrenci", fiyatAltin: 0, fiyatElmas: 0, ciftPara: false, aciklama: "Standart 8-C öğrencisi." },
+    "2": { ad: "Sınav Canavarı", fiyatAltin: 150, fiyatElmas: 0, ciftPara: false, aciklama: "Ekstra Puan kazanır." },
+    "3": { ad: "Arka Sıra Filozofu", fiyatAltin: 250, fiyatElmas: 0, ciftPara: false, aciklama: "Ekstra Altın kazanır." },
+    "4": { ad: "⚡ DELİ (Süper Güçlü OP)", fiyatAltin: 1000, fiyatElmas: 5, ciftPara: true, aciklama: "Oyunun en iyisi! 5 Can başlar, 2x Altın & Puan kazanır!" }
 };
 
 const BOOST_URUNLERI = {
-    "boost_1s": { ad: "1 Saatlik Boost", sureMs: 3600000, fiyatAltin: 100, fiyatElmas: 2 }
+    "boost_1s": { ad: "1 Saatlik Boost", sureMs: 3600000, fiyatAltin: 100, fiyatElmas: 0, aciklama: "1.5x Puan" },
+    "boost_mega": { ad: "🚀 Mega XP Katlayıcı", sureMs: 7200000, fiyatAltin: 250, fiyatElmas: 0, aciklama: "2x XP Kazanımı" },
+    "boost_elmas": { ad: "🛡️ Elmas Kalkanı", sureMs: 3600000, fiyatAltin: 0, fiyatElmas: 3, aciklama: "+1 Ekstra Can" },
+    "boost_kantin": { ad: "🍔 Kantin Katlayıcı", sureMs: 3600000, fiyatAltin: 500, fiyatElmas: 0, aciklama: "2x Altın Kazanımı" }
 };
 
 const SORU_HAVUZU = [
-    { soru: "Türkiye'nin başkenti neresidir?", secenekler: ["İstanbul", "Ankara", "İzmir", "Bursa"], cevap: 1 },
-    { soru: "Hangisi bir programlama dili değildir?", secenekler: ["Python", "HTML", "C++", "Java"], cevap: 1 },
-    { soru: "Güneş sistemine en yakın gezegen hangisidir?", secenekler: ["Venüs", "Mars", "Merkür", "Jüpiter"], cevap: 2 },
-    { soru: "İstiklal Marşı'nın şairi kimdir?", secenekler: ["Mehmet Akif Ersoy", "Orhan Veli", "Namık Kemal", "Atatürk"], cevap: 0 },
-    { soru: "Su hangi sıcaklıkta kaynar?", secenekler: ["90°C", "100°C", "110°C", "80°C"], cevap: 1 }
+    { soru: "Matematik öğretmeni tahtaya kaldırdı: '2x + 6 = 14 ise x kaçtır?'", secenekler: ["3", "4", "5", "6"], cevap: 1 },
+    { soru: "Türkçe dersinde fiilimsi sorusu: 'Koşarak gelen çocuk' cümlesinde 'koşarak' türü nedir?", secenekler: ["İsim-fiil", "Sıfat-fiil", "Zarf-fiil", "Çekimli fiil"], cevap: 2 },
+    { soru: "Fen Bilgisi labında hoca sordu: Periyodik cetvelde 'Na' hangi elementtir?", secenekler: ["Azot", "Sodyum", "Nikel", "Neon"], cevap: 1 },
+    { soru: "İnkılap Tarihi dersinde: Amasya Genelgesi'nin en önemli sonucu nedir?", secenekler: ["Milli Mücadelenin amacı ve yöntemi belirtildi", "Manda ve himaye kabul edildi", "Sevr antlaşması imzalandı", "Savaş bitti"], cevap: 0 },
+    { soru: "Kantin sırasında arkadan biri önüne geçmeye çalıştı, 8-C öğrencisi olarak ne yaparsın?", secenekler: ["Kavga ederim", "Sıranın arkasına geçmesi için uyarırım", "Görmezden gelirim", "Kantinciden bağırırım"], cevap: 1 },
+    { soru: "İngilizce öğretmeni sordu: 'What is the capital of England?'", secenekler: ["Paris", "London", "Berlin", "Madrid"], cevap: 1 },
+    { soru: "Beden Eğitimi dersinde voleybol turnuvası var. Takım kaptanı seni seçti, tutumun ne olur?", secenekler: ["Oynamam", "Takım ruhuyla elinden geleni yaparsın", "Topu tek başına oynarsın", "Kenarda oturursun"], cevap: 1 },
+    { soru: "Din Kültürü dersinde: Zekat kimlere verilir?", secenekler: ["Zenginlere", "İhtiyaç sahiplerine", "Okul müdürüne", "Herkese"], cevap: 1 },
+    { soru: "Nöbetçi öğrencisin, müdür yardımcısı evrak imzalatmanı istedi. Ne yaparsın?", secenekler: ["Hemen gidip imzalatıp getiririm", "Sınıfa gidip uyurum", "Bahçede gezerim", "Evrakı kaybederim"], cevap: 0 },
+    { soru: "Yazılı sınavdan 100 aldın, öğretmen sözlüne kaç verir?", secenekler: ["50", "100", "0", "70"], cevap: 1 },
+    { soru: "Görsel Sanatlar dersinde resim çantasını evde unuttun, ne yaparsın?", secenekler: ["Dersten kaçarım", "Sıra arkadaşımdan yedek boya isterim", "Uykuma bakarim", "Ağlarım"], cevap: 1 },
+    { soru: "Müzik dersinde blok flüt çalma sırası sana geldi. Hangi notayla başlarsın?", secenekler: ["Do", "Re", "Mi", "Fa"], cevap: 0 },
+    { soru: "Rehberlik öğretmeni gelecekteki hedefini sorduğunda en mantıklı yanıt nedir?", secenekler: ["Yatmak", "Düzenli çalışıp başarmak", "Bilgisayar oynamak", "Okulu bırakmak"], cevap: 1 },
+    { soru: "Sınıf başkanı seçiminde aday oldun. İlk vaadin ne olur?", secenekler: ["Sınıfı temiz ve düzenli tutmak", "Ödevleri yaptırmamak", "Derse girmemek", "Her gün tatil yapmak"], cevap: 0 },
+    { soru: "Sınıfta cam kırıldı, hoca kim yaptı diye soruyor. Dürüst davranış nedir?", secenekler: ["Başkasına iftira atmak", "Doğruyu söylemek", "Sessiz kalmak", "Kaçmak"], cevap: 1 },
+    { soru: "Solunum sistemimizin ana organı hangisidir?", secenekler: ["Kalp", "Mide", "Akciğer", "Böbrek"], cevap: 2 },
+    { soru: "Kütüphanede uyulması gereken en temel kurallardan biri nedir?", secenekler: ["Yüksek sesle konuşmak", "Sessiz olmak", "Yemek yemek", "Müzik dinlemek"], cevap: 1 },
+    { soru: "Suyun donma noktası kaç derecedir?", secenekler: ["0°C", "100°C", "-10°C", "50°C"], cevap: 0 },
+    { soru: "İstiklal Marşı kaç kıtadan oluşur?", secenekler: ["8", "10", "12", "5"], cevap: 1 },
+    { soru: "8-C sınıfında en başarılı öğrenci olmak için ne yapmalısın?", secenekler: ["Düzenli tekrar ve soru çözümü yapmak", "Sadece oyun oynamak", "Dersi dinlememek", "Kitap açmamak"], cevap: 0 }
 ];
 
 let gameState = {
@@ -73,7 +91,8 @@ let gameState = {
     kazanilanElmas: 0,
     aktifSorular: [],
     currentIndex: 0,
-    answered: false
+    answered: false,
+    toplamSoruSayisi: 10
 };
 
 window.onload = () => {
@@ -96,15 +115,17 @@ function lobiGuncelle() {
     document.getElementById('menuPara').innerText = playerProfile.toplamPara;
     document.getElementById('menuElmas').innerText = playerProfile.elmas;
     document.getElementById('menuSeviye').innerText = playerProfile.seviye;
+    document.getElementById('menuXP').innerText = playerProfile.xp;
     document.getElementById('shopPara').innerText = playerProfile.toplamPara;
     document.getElementById('shopElmas').innerText = playerProfile.elmas;
 
     let aktifKarakterAdi = KARAKTER_TIPLERI[playerProfile.aktifKarakterId] ? KARAKTER_TIPLERI[playerProfile.aktifKarakterId].ad : "Normal Öğrenci";
     document.getElementById('oyuncuKarakterGosterge').innerText = aktifKarakterAdi;
 
-    const list = document.getElementById('characterShopList');
-    if (list) {
-        list.innerHTML = '';
+    // Karakter Mağazası
+    const charList = document.getElementById('characterShopList');
+    if (charList) {
+        charList.innerHTML = '';
         Object.keys(KARAKTER_TIPLERI).forEach(id => {
             let k = KARAKTER_TIPLERI[id];
             let acik = playerProfile.acilanKarakterler.includes(id);
@@ -113,10 +134,32 @@ function lobiGuncelle() {
             let div = document.createElement('div');
             div.className = `shop-card ${secili ? 'aktif' : ''}`;
             
-            let durumYazisi = secili ? "✅ Seçili" : (acik ? "Kullan" : (k.fiyat > 0 ? `${k.fiyat} 🪙` : `${k.elmasFiyat} 💎`));
+            let fiyatEtiketi = "";
+            if (k.ciftPara) {
+                fiyatEtiketi = `${k.fiyatAltin} 🪙 + ${k.fiyatElmas} 💎`;
+            } else {
+                fiyatEtiketi = k.fiyatAltin > 0 ? `${k.fiyatAltin} 🪙` : (k.fiyatElmas > 0 ? `${k.fiyatElmas} 💎` : "Ücretsiz");
+            }
+
+            let durumYazisi = secili ? "✅ Seçili" : (acik ? "Kullan" : fiyatEtiketi);
             
-            div.innerHTML = `<div><b>${k.ad}</b></div><button class="main-btn" style="width:auto; padding:8px 15px; margin:0;" onclick="karakterSecVeyaAl('${id}')">${durumYazisi}</button>`;
-            list.appendChild(div);
+            div.innerHTML = `<div><b>${k.ad}</b><br><small style="color:#cbd5e1">${k.aciklama}</small></div><button class="main-btn" style="width:auto; padding:8px 15px; margin:0;" onclick="karakterSecVeyaAl('${id}')">${durumYazisi}</button>`;
+            charList.appendChild(div);
+        });
+    }
+
+    // Boost Mağazası
+    const boostList = document.getElementById('boostShopList');
+    if (boostList) {
+        boostList.innerHTML = '';
+        Object.keys(BOOST_URUNLERI).forEach(key => {
+            let b = BOOST_URUNLERI[key];
+            let div = document.createElement('div');
+            div.className = 'shop-card';
+            let fiyatTxt = b.fiyatAltin > 0 ? `${b.fiyatAltin} 🪙` : `${b.fiyatElmas} 💎`;
+            let tur = b.fiyatAltin > 0 ? 'altin' : 'elmas';
+            div.innerHTML = `<div><b>${b.ad}</b><br><small style="color:#cbd5e1">${b.aciklama}</small></div><button class="main-btn" style="width:auto; padding:8px 12px; margin:0;" onclick="boostSatinAl('${key}', '${tur}')">${fiyatTxt}</button>`;
+            boostList.appendChild(div);
         });
     }
 }
@@ -128,10 +171,18 @@ function karakterSecVeyaAl(id) {
         kaydet();
         lobiGuncelle();
     } else {
-        if (k.fiyat > 0 && playerProfile.toplamPara >= k.fiyat) {
-            playerProfile.toplamPara -= k.fiyat;
-        } else if (k.elmasFiyat > 0 && playerProfile.elmas >= k.elmasFiyat) {
-            playerProfile.elmas -= k.elmasFiyat;
+        if (k.ciftPara) {
+            if (playerProfile.toplamPara >= k.fiyatAltin && playerProfile.elmas >= k.fiyatElmas) {
+                playerProfile.toplamPara -= k.fiyatAltin;
+                playerProfile.elmas -= k.fiyatElmas;
+            } else {
+                alert(`❌ DELİ karakteri için hem ${k.fiyatAltin} Altın hem de ${k.fiyatElmas} Elmas gerekiyor!`);
+                return;
+            }
+        } else if (k.fiyatAltin > 0 && playerProfile.toplamPara >= k.fiyatAltin) {
+            playerProfile.toplamPara -= k.fiyatAltin;
+        } else if (k.fiyatElmas > 0 && playerProfile.elmas >= k.fiyatElmas) {
+            playerProfile.elmas -= k.fiyatElmas;
         } else {
             alert("❌ Yetersiz bakiye!");
             return;
@@ -141,7 +192,7 @@ function karakterSecVeyaAl(id) {
         playerProfile.aktifKarakterId = id;
         kaydet();
         lobiGuncelle();
-        alert("🛍️ Satın alım başarılı!");
+        alert("⚡ SÜPER GÜÇLÜ DELİ KARAKTERİ AÇILDI!");
     }
 }
 
@@ -162,40 +213,59 @@ function boostSatinAl(boostKey, tur) {
     alert("🛍️ Boost aktif edildi!");
 }
 
+function liderlikAc() {
+    sayfaDegis('leaderboardScreen');
+    const tbody = document.getElementById('leaderboardBody');
+    tbody.innerHTML = '';
+
+    let botData = [
+        { isim: "Ahmet (8-A)", xp: 1200, seviye: 12 },
+        { isim: "Zeynep (8-C)", xp: 950, seviye: 10 },
+        { isim: "Mehmet (8-B)", xp: 700, seviye: 7 },
+        { isim: "Ece (8-C)", xp: 450, seviye: 5 }
+    ];
+
+    let allPlayers = [...botData, { isim: playerProfile.isim + " (Sen)", xp: playerProfile.xp, seviye: playerProfile.seviye }];
+    allPlayers.sort((a, b) => b.xp - a.xp);
+
+    allPlayers.forEach((p, idx) => {
+        let tr = document.createElement('tr');
+        if (p.isim.includes("(Sen)")) tr.style.fontWeight = 'bold';
+        tr.innerHTML = `<td>#${idx + 1}</td><td>${p.isim}</td><td>⭐ ${p.xp}</td><td>Lvl ${p.seviye}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
 function oyunuBaslatTikla() {
     initAudio();
     gameState.zorluk = document.getElementById('mode-select').value;
-    gameState.can = 3;
+    
+    // Zorluk moduna göre soru sayısı
+    if (gameState.zorluk === 'kolay') gameState.toplamSoruSayisi = 5;
+    else if (gameState.zorluk === 'normal') gameState.toplamSoruSayisi = 10;
+    else if (gameState.zorluk === 'zor') gameState.toplamSoruSayisi = 20;
+
+    // Deli karakteri 5 can verir, diğerleri 3
+    gameState.can = (playerProfile.aktifKarakterId === "4") ? 5 : 3;
+    if (playerProfile.aktifBoostlar["boost_elmas"]) gameState.can += 1;
+
     gameState.puan = 0;
     gameState.kazanilanAltin = 0;
     gameState.kazanilanElmas = 0;
     gameState.currentIndex = 0;
     gameState.answered = false;
 
-    gameState.aktifSorular = [...SORU_HAVUZU].sort(() => 0.5 - Math.random()).slice(0, 5);
+    // Soruları karıştır ve seç
+    gameState.aktifSorular = [...SORU_HAVUZU].sort(() => 0.5 - Math.random()).slice(0, gameState.toplamSoruSayisi);
 
     sayfaDegis('quizScreen');
-
-    let senaryoGec = document.getElementById('skipScenarioCheck').checked;
-    if (senaryoGec) {
-        if (playerProfile.elmas >= 10) {
-            playerProfile.elmas -= 10;
-            kaydet();
-            alert("💎 10 Elmas harcanarak senaryo geçildi!");
-            sorulariAc();
-        } else {
-            alert("❌ 10 Elmasın olmadığı için senaryo geçilemedi!");
-            senaryoGoster();
-        }
-    } else {
-        senaryoGoster();
-    }
+    senaryoGoster();
 }
 
 function senaryoGoster() {
     document.getElementById('scenarioBox').style.display = 'block';
     document.getElementById('quizContentBox').style.display = 'none';
-    setTimeout(() => sorulariAc(), 2500);
+    setTimeout(() => sorulariAc(), 1800);
 }
 
 function sorulariAc() {
@@ -239,11 +309,14 @@ function secenekSec(idx, btn) {
     let q = gameState.aktifSorular[gameState.currentIndex];
     let allBtns = document.querySelectorAll('.option-btn');
 
+    let puanKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
+    let altınKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
+
     if (idx === q.cevap) {
         btn.classList.add('correct');
-        gameState.puan += 20;
-        gameState.kazanilanAltin += 15;
-        if (Math.random() < 0.2) gameState.kazanilanElmas += 1;
+        gameState.puan += 20 * puanKatsayi;
+        gameState.kazanilanAltin += 15 * altınKatsayi;
+        if (Math.random() < 0.3) gameState.kazanilanElmas += 1;
     } else {
         btn.classList.add('wrong');
         if (allBtns[q.cevap]) allBtns[q.cevap].classList.add('correct');
@@ -256,7 +329,7 @@ function secenekSec(idx, btn) {
     } else if (gameState.currentIndex < gameState.aktifSorular.length - 1) {
         document.getElementById('nextBtn').style.display = 'block';
     } else {
-        setTimeout(() => oyunBitir(true), 1500);
+        setTimeout(() => oyunBitir(true), 1200);
     }
 }
 
@@ -274,6 +347,7 @@ function oyunBitir(basarili) {
     playerProfile.toplamPara += gameState.kazanilanAltin;
     playerProfile.elmas += gameState.kazanilanElmas;
     playerProfile.xp += gameState.puan;
+
     if (playerProfile.xp >= playerProfile.seviye * 100) {
         playerProfile.seviye += 1;
         alert("🎉 Seviye atladın!");
