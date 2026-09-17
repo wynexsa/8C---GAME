@@ -3,73 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8-C Hayatta Kalma Simülasyonu</title>
-    <link rel="stylesheet" href="style.css">
+    <title>8C GAME - Okul Simülasyonu</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; text-align: center; margin: 0; padding: 20px; }
+        .screen { display: none; max-width: 600px; margin: 0 auto; background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .screen.active { display: block; }
+        .profile-bar { display: flex; justify-content: space-around; background: #334155; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
+        .main-btn { background: #22c55e; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; margin: 10px 0; width: 100%; font-weight: bold; }
+        .main-btn:hover { background: #16a34a; }
+        .support-btn { background: #3b82f6; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; margin: 5px 0; width: 100%; }
+        .support-btn:hover { background: #2563eb; }
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .shop-card { background: #334155; padding: 10px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .shop-card.aktif { border-color: #22c55e; }
+        .options-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .option-btn { background: #475569; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 15px; text-align: left; }
+        .option-btn:hover { background: #64748b; }
+        .option-btn.correct { background: #22c55e !important; }
+        .option-btn.wrong { background: #ef4444 !important; }
+        .game-header { display: flex; justify-content: space-between; background: #334155; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; }
+        .card { background: #334155; padding: 15px; border-radius: 8px; margin-top: 10px; text-align: left; }
+        .tier-section { background: #334155; padding: 10px; border-radius: 8px; margin-top: 15px; text-align: left; }
+    </style>
 </head>
 <body>
 
-<div class="container" id="app">
-    <!-- Karşılama ve Mod Seçimi -->
-    <div id="screen-menu" class="center-box">
-        <h1>ORUÇ REİS ORTAOKULU</h1>
-        <h2>8-C HAYATTA KALMA SİMÜLASYONU</h2>
-        <p style="margin-bottom: 20px; color: #8d8d99;">Zil çaldı, ortaokul krizleri seni bekliyor!</p>
+    <!-- Ana Menü / Lobi -->
+    <div id="startScreen" class="screen active">
+        <h1>🏫 8C Sınıfı Simülasyonu</h1>
         
-        <div style="text-align: left; background: #29292e; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-            <label style="font-weight: bold; color: #fba94c;">Karakter Seçimi:</label>
-            <select id="char-select">
-                <option value="1">Arka Sıra Filozofu (Kaytarıcı)</option>
-                <option value="2">Sınav Canavarı (İnek)</option>
-                <option value="3">Orta Yolcu (Normal Öğrenci)</option>
-                <option value="4">Özel Karakter Yarat</option>
-            </select>
-            
-            <div id="custom-char-box" class="hidden">
-                <label>Ad Soyad:</label>
-                <input type="text" id="custom-name" placeholder="Örn: Ali Yılmaz">
-                <label>Lakap:</label>
-                <input type="text" id="custom-nickname" placeholder="Örn: Reis">
-            </div>
-            
-            <label style="font-weight: bold; color: #fba94c;">Zorluk Modu:</label>
-            <select id="mode-select">
-                <option value="1">Normal Mod (10 Soru)</option>
-                <option value="2">Zor Mod (Hardcore - 15 Soru)</option>
+        <div class="profile-bar">
+            <span>👤 <b id="oyuncuIsimGosterge">Öğrenci</b></span>
+            <span>🪙 <b id="menuPara">100</b></span>
+            <span>💎 <b id="menuElmas">10</b></span>
+            <span>⭐ Seviye: <b id="menuSeviye">1</b> (<span id="menuXp">0</span> XP)</span>
+        </div>
+
+        <div style="margin: 15px 0; text-align: left;">
+            <label for="mode-select"><b>Zorluk Seç:</b></label>
+            <select id="mode-select" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; background: #334155; color: white; border: 1px solid #475569;">
+                <option value="normal">Normal</option>
+                <option value="zor">Zor (Akıl Sağlığı Dahil)</option>
             </select>
         </div>
-        
-        <button onclick="oyunuBaslat()" style="width: 100%; text-align: center; background-color: #fba94c; color: #121214; font-size: 16px;">OYUNA BAŞLA</button>
+
+        <div style="margin: 10px 0; text-align: left;">
+            <label style="cursor: pointer;">
+                <input type="checkbox" id="skipScenarioCheck"> Senaryoyu Geç (💎 10 Elmas)
+            </label>
+        </div>
+
+        <button class="main-btn" onclick="startGame()">🚀 Oyuna Başla</button>
+        <button class="support-btn" onclick="openSupport()">📧 Destek ve Öneri (qiwee617@gmail.com)</button>
+
+        <div class="shop-section">
+            <h3>🛍️ Karakter Mağazası</h3>
+            <div id="characterShopList" class="shop-grid"></div>
+        </div>
+
+        <div class="shop-section" style="margin-top: 15px;">
+            <h3>⚡ Boost Ürünleri</h3>
+            <button class="support-btn" onclick="buyBoost('boost_1s', 'altin')">1 Saatlik Boost (100 Altın)</button>
+            <button class="support-btn" onclick="buyBoost('boost_1s', 'elmas')">1 Saatlik Boost (2 Elmas)</button>
+        </div>
+
+        <div id="tierListContainer" class="tier-section"></div>
     </div>
 
     <!-- Oyun Ekranı -->
-    <div id="screen-game" class="hidden">
-        <h1 id="game-title">ORUÇ REİS ORTAOKULU</h1>
-        <h2 id="char-info">Karakter: </h2>
-        
-        <div class="stats">
-            <div class="stat-item">Can: <span id="stat-can">100</span></div>
-            <div class="stat-item">Stres: <span id="stat-stres">50</span></div>
-            <div class="stat-item">Başarı: <span id="stat-basari">50</span></div>
+    <div id="quizScreen" class="screen">
+        <div class="game-header">
+            <span>Can: ❤️ <span id="livesCount">3</span></span>
+            <span id="akil-sagligi-container" style="display:none;">Akıl: 🧠 <span id="akilCount">100</span></span>
+            <span>Puan: ⭐ <span id="scoreCount">0</span></span>
         </div>
 
-        <div class="card">
-            <div class="crisis-title" id="crisis-title">OLAY BAŞLIĞI</div>
-            <div class="crisis-text" id="crisis-text">Olay metni burada yer alacak...</div>
+        <div id="scenarioBox" class="card">
+            <h3>📖 Senaryo Akışı</h3>
+            <p>Zil çaldı, ders başladı. Öğretmen tahtaya kalkmanı istiyor...</p>
         </div>
 
-        <div class="options" id="options-box"></div>
-
-        <div id="feedback-box" class="feedback">Dönüt mesajı</div>
+        <div id="quizContentBox" class="card" style="display: none;">
+            <h3 id="questionNum">Soru 1 / 5</h3>
+            <p id="questionText">Soru yükleniyor...</p>
+            <div id="optionsList" class="options-grid"></div>
+            <button id="nextBtn" class="main-btn" style="display: none; margin-top: 15px;" onclick="nextQuestion()">Sonraki Soru</button>
+        </div>
     </div>
 
-    <!-- Sonuç Ekranı -->
-    <div id="screen-end" class="hidden center-box">
-        <h1 id="end-header" style="font-size: 24px; margin-bottom: 15px;">OYUN BİTTİ</h1>
-        <p id="end-text" style="line-height: 1.6; margin-bottom: 25px; color: #c4c4cc;"></p>
-        <button onclick="anaMenuyeDon()" style="width: 100%; text-align: center; background-color: #00b37e; font-size: 16px;">Ana Menüye Dön</button>
+    <!-- Oyun Bitiş Ekranı -->
+    <div id="gameOverScreen" class="screen">
+        <h2 id="endTitle">Oyun Bitti</h2>
+        <p id="endMessage">Sonuçlar yükleniyor...</p>
+        <p>Toplam Puanın: <span id="finalScore">0</span></p>
+        <button class="main-btn" onclick="restartGame()">Ana Menüye Dön</button>
     </div>
-</div>
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
