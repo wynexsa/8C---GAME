@@ -1,4 +1,4 @@
-// Web Audio API Sound Synthesizer
+// Web Audio API - Ses Sentezleyici
 let audioCtx = null;
 
 function initAudio() {
@@ -10,6 +10,7 @@ function initAudio() {
     }
 }
 
+// Ses Efektleri
 function playCorrectSound() {
     initAudio();
     const now = audioCtx.currentTime;
@@ -50,18 +51,50 @@ function playWrongSound() {
     osc.stop(now + 0.4);
 }
 
-// Oyuncu Profili ve Yerel Depolama (LocalStorage)
+function playBuySound() {
+    initAudio();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(587.33, now); // D5
+    osc.frequency.setValueAtTime(880.00, now + 0.1); // A5
+
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+}
+
+// Güvenli DOM Yardımcıları (Eleman bulunamazsa çökmeyi önler)
+function setElemText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text;
+}
+function setElemHTML(id, html) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+}
+function setElemDisplay(id, display) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = display;
+}
+
+// Oyuncu Verileri (LocalStorage)
 let playerProfile = {
     isim: localStorage.getItem('oyuncu_isim') || "",
     toplamPara: parseInt(localStorage.getItem('oyuncu_para')) || 100, // Altın
-    elmas: parseInt(localStorage.getItem('oyuncu_elmas')) || 5,       // Elmas (Daha zor kazanılır)
+    elmas: parseInt(localStorage.getItem('oyuncu_elmas')) || 10,       // Elmas
     xp: parseInt(localStorage.getItem('oyuncu_xp')) || 0,
     seviye: parseInt(localStorage.getItem('oyuncu_seviye')) || 1,
-    toplamOynamaSuresiDk: parseInt(localStorage.getItem('oyuncu_sure')) || 0, // Dakika cinsinden
-    acilanKarakterler: JSON.parse(localStorage.getItem('acilan_karakterler')) || ["1"],
+    toplamOynamaSuresiDk: parseInt(localStorage.getItem('oyuncu_sure')) || 0,
+    acilanKarakterler: JSON.parse(localStorage.getItem('acilan_karakterler')) || ["1"], // "1" her zaman açık
     aktifKarakterId: localStorage.getItem('aktif_karakter') || "1",
-    satinAlinanOzellikler: JSON.parse(localStorage.getItem('satin_ozellikler')) || [],
-    aktifBoostlar: JSON.parse(localStorage.getItem('aktif_boostlar')) || {} // { tip: bitis_zamani_ms }
+    aktifBoostlar: JSON.parse(localStorage.getItem('aktif_boostlar')) || {}
 };
 
 function saveProfile() {
@@ -73,19 +106,18 @@ function saveProfile() {
     localStorage.setItem('oyuncu_sure', playerProfile.toplamOynamaSuresiDk);
     localStorage.setItem('acilan_karakterler', JSON.stringify(playerProfile.acilanKarakterler));
     localStorage.setItem('aktif_karakter', playerProfile.aktifKarakterId);
-    localStorage.setItem('satin_ozellikler', JSON.stringify(playerProfile.satinAlinanOzellikler));
     localStorage.setItem('aktif_boostlar', JSON.stringify(playerProfile.aktifBoostlar));
 }
 
-// Karakterler
+// Karakterler (Normal Öğrenci Her Zaman Bedava)
 const KARAKTER_TIPLERI = {
-    "1": { ad: "Arka Sıra Filozofu", fiyat: 0, akilSagligi: 100 },
-    "2": { ad: "Sınav Canavarı", fiyat: 150, akilSagligi: 90 },
-    "3": { ad: "Orta Yolcu Öğrenci", fiyat: 250, akilSagligi: 100 },
-    "4": { ad: "Veli", fiyat: 400, akilSagligi: 110 }
+    "1": { ad: "Normal Öğrenci (Varsayılan)", fiyat: 0, elmasFiyat: 0, akilSagligi: 100 },
+    "2": { ad: "Sınav Canavarı", fiyat: 150, elmasFiyat: 0, akilSagligi: 90 },
+    "3": { ad: "Arka Sıra Filozofu", fiyat: 250, elmasFiyat: 0, akilSagligi: 100 },
+    "4": { ad: "Veli", fiyat: 400, elmasFiyat: 5, akilSagligi: 110 }
 };
 
-// Mağaza Boost Ürünleri (Süre bazlı)
+// Boost Ürünleri
 const BOOST_URUNLERI = {
     "boost_1s": { ad: "1 Saatlik XP/Altın Boost", sureMs: 3600000, fiyatAltin: 100, fiyatElmas: 2 },
     "boost_1g": { ad: "1 Günlük XP/Altın Boost", sureMs: 86400000, fiyatAltin: 800, fiyatElmas: 12 },
@@ -116,7 +148,7 @@ let gameState = {
     answered: false
 };
 
-// Oyun Açılışında İsim Kontrolü ve Lobi
+// Sayfa Yüklendiğinde
 window.onload = () => {
     kontrolVeIsteIsim();
     renderLobby();
@@ -125,33 +157,39 @@ window.onload = () => {
 
 function kontrolVeIsteIsim() {
     if (!playerProfile.isim || playerProfile.isim.trim() === "") {
-        let girilenIsim = prompt("Lütfen oyuncu adınızı girin:\n⚠️ (UYARI: Gerçek isminizi girmeyiniz!)");
+        let girilenIsim = prompt("Lütfen oyuncu adınızı girin:\n⚠️ (GERÇEK İSMİNİZİ GİRMEYİNİZ!)");
         if (girilenIsim && girilenIsim.trim() !== "") {
             playerProfile.isim = girilenIsim.trim();
         } else {
-            playerProfile.isim = "GizliÖğrenci_" + Math.floor(Math.random() * 1000);
+            playerProfile.isim = "Öğrenci_" + Math.floor(Math.random() * 1000);
         }
         saveProfile();
     }
 }
 
-// Oyunda geçirilen süreyi dakikalık olarak takip et (Tier List için)
 function oyunSuresiBaslat() {
     setInterval(() => {
         playerProfile.toplamOynamaSuresiDk += 1;
         saveProfile();
-    }, 60000); // Her 1 dakikada bir artar
+    }, 60000);
 }
 
-// Lobi Arayüzünü Güncelle
-function renderLobby() {
-    document.getElementById('menuPara').innerText = playerProfile.toplamPara;
-    document.getElementById('menuElmas').innerText = playerProfile.elmas;
-    document.getElementById('menuSeviye').innerText = playerProfile.seviye;
-    document.getElementById('menuXp').innerText = playerProfile.xp;
-    document.getElementById('oyuncuIsimGosterge').innerText = playerProfile.isim;
+// Destek ve Öneri Modalı / İletişim
+function openSupport() {
+    const email = "qiwee617@gmail.com";
+    alert(`📧 DESTEK VE ÖNERİ\n\nHer türlü öneri, şikayet ve görüşleriniz için e-posta adresimiz:\n${email}\n\nTamam'a basarak doğrudan e-posta gönderebilirsiniz.`);
+    window.location.href = `mailto:${email}?subject=8C-GAME%20Oneri%20ve%20Sikayet`;
+}
 
-    // Karakter Listesi
+// Lobi ve Mağaza Ekranı Render
+function renderLobby() {
+    setElemText('menuPara', playerProfile.toplamPara);
+    setElemText('menuElmas', playerProfile.elmas);
+    setElemText('menuSeviye', playerProfile.seviye);
+    setElemText('menuXp', playerProfile.xp);
+    setElemText('oyuncuIsimGosterge', playerProfile.isim);
+
+    // Karakter Mağazası Render
     const charListDiv = document.getElementById('characterShopList');
     if (charListDiv) {
         charListDiv.innerHTML = '';
@@ -160,40 +198,63 @@ function renderLobby() {
             let acik = playerProfile.acilanKarakterler.includes(id);
             let aktif = playerProfile.aktifKarakterId === id;
 
-            let btn = document.createElement('div');
-            btn.className = `shop-card ${aktif ? 'aktif' : ''}`;
-            btn.innerHTML = `
+            let card = document.createElement('div');
+            card.className = `shop-card ${aktif ? 'aktif' : ''}`;
+            
+            let fiyatMetni = "BEDAVA";
+            if (!acik) {
+                fiyatMetni = k.fiyat > 0 ? `🔒 ${k.fiyat} Altın` : `🔒 ${k.elmasFiyat} Elmas`;
+            } else {
+                fiyatMetni = aktif ? "✅ Seçili" : "Kullan";
+            }
+
+            card.innerHTML = `
                 <h4>${k.ad}</h4>
-                <p>${acik ? (aktif ? '✅ Seçili' : 'Kilidi Açık') : '🔒 Fiyat: ' + k.fiyat + ' Altın'}</p>
+                <p>${fiyatMetni}</p>
             `;
-            btn.onclick = () => {
-                if (acik) {
-                    playerProfile.aktifKarakterId = id;
-                    saveProfile();
-                    renderLobby();
-                } else if (playerProfile.toplamPara >= k.fiyat) {
-                    playerProfile.toplamPara -= k.fiyat;
-                    playerProfile.acilanKarakterler.push(id);
-                    playerProfile.aktifKarakterId = id;
-                    saveProfile();
-                    renderLobby();
-                } else {
-                    alert("Yeterli altının yok!");
-                }
-            };
-            charListDiv.appendChild(btn);
+
+            card.onclick = () => satinAlVeyaSecKarakter(id);
+            charListDiv.appendChild(card);
         });
     }
 
-    // Liderlik Tablosu / Tier List Güncelle (Simüle edilmiş oyuncular + gerçek oyuncu)
     renderTierList();
+}
+
+function satinAlVeyaSecKarakter(id) {
+    let k = KARAKTER_TIPLERI[id];
+    let acik = playerProfile.acilanKarakterler.includes(id);
+
+    if (acik) {
+        playerProfile.aktifKarakterId = id;
+        saveProfile();
+        renderLobby();
+    } else {
+        if (k.fiyat > 0 && playerProfile.toplamPara >= k.fiyat) {
+            playerProfile.toplamPara -= k.fiyat;
+            basariliSatinAlim(id);
+        } else if (k.elmasFiyat > 0 && playerProfile.elmas >= k.elmasFiyat) {
+            playerProfile.elmas -= k.elmasFiyat;
+            basariliSatinAlim(id);
+        } else {
+            alert("❌ Yeterli bakiyeniz bulunmuyor!");
+        }
+    }
+}
+
+function basariliSatinAlim(id) {
+    playBuySound();
+    playerProfile.acilanKarakterler.push(id);
+    playerProfile.aktifKarakterId = id;
+    saveProfile();
+    renderLobby();
+    alert("🛍️ Oyun içi parayla satın alımınız için teşekkürler!");
 }
 
 function renderTierList() {
     const tierDiv = document.getElementById('tierListContainer');
     if (!tierDiv) return;
 
-    // Örnek diğer oyuncular ile birlikte gerçek oyuncunun süresini sıralayalım
     let liderler = [
         { isim: playerProfile.isim, sure: playerProfile.toplamOynamaSuresiDk },
         { isim: "ProGamer_99", sure: 1420 },
@@ -202,14 +263,13 @@ function renderTierList() {
         { isim: "DersÇalışmayan", sure: 210 }
     ];
 
-    // Süreye göre büyükten küçüğe sırala
     liderler.sort((a, b) => b.sure - a.sure);
 
     let html = "<h3>🏆 En Çok Oynayanlar Tier List</h3><ul style='list-style:none; padding:0;'>";
     liderler.forEach((l, index) => {
         let badge = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🎮";
         let aktifMi = l.isim === playerProfile.isim ? "style='color:#4ade80; font-weight:bold;'" : "";
-        html += `<li ${aktifMi}>${badge} #${index+1} - <b>${l.isim}</b>: ${l.sure} dakika</li>`;
+        html += `<li ${aktifMi}>${badge} #${index+1} - <b>${l.isim}</b>: ${l.sure} dk</li>`;
     });
     html += "</ul>";
     tierDiv.innerHTML = html;
@@ -223,32 +283,34 @@ function buyBoost(boostKey, paraTuru) {
     if (paraTuru === 'altin') {
         if (playerProfile.toplamPara >= boost.fiyatAltin) {
             playerProfile.toplamPara -= boost.fiyatAltin;
-        } else { alert("Yeterli altının yok!"); return; }
+        } else { alert("❌ Yeterli altının yok!"); return; }
     } else {
         if (playerProfile.elmas >= boost.fiyatElmas) {
             playerProfile.elmas -= boost.fiyatElmas;
-        } else { alert("Yeterli elmasın yok!"); return; }
+        } else { alert("❌ Yeterli elmasın yok!"); return; }
     }
 
-    // Boost süresini ekle
+    playBuySound();
     let mevcutBitis = playerProfile.aktifBoostlar[boostKey] || simdi;
     playerProfile.aktifBoostlar[boostKey] = Math.max(simdi, mevcutBitis) + boost.sureMs;
     saveProfile();
     renderLobby();
-    alert(boost.ad + " başarıyla aktifleştirildi!");
+    alert("🛍️ Oyun içi parayla satın alımınız için teşekkürler!\n" + boost.ad + " aktifleştirildi!");
 }
 
-// Oyunu Başlatma
+// Oyuna Başla
 function startGame() {
     initAudio();
-    gameState.zorluk = document.getElementById('mode-select').value;
+
+    const modeSelectEl = document.getElementById('mode-select');
+    gameState.zorluk = modeSelectEl ? modeSelectEl.value : 'normal';
     
     gameState.can = 3;
     gameState.puan = 0;
     gameState.kazanilanAltin = 0;
     gameState.kazanilanElmas = 0;
     
-    let aktifChar = KARAKTER_TIPLERI[playerProfile.aktifKarakterId];
+    let aktifChar = KARAKTER_TIPLERI[playerProfile.aktifKarakterId] || KARAKTER_TIPLERI["1"];
     gameState.akilSagligi = aktifChar.akilSagligi;
     gameState.currentIndex = 0;
     gameState.answered = false;
@@ -256,17 +318,22 @@ function startGame() {
     let shuffled = [...SORU_HAVUZU].sort(() => 0.5 - Math.random());
     gameState.aktifSorular = shuffled.slice(0, 5);
 
-    document.getElementById('startScreen').classList.remove('active');
-    document.getElementById('gameOverScreen').classList.remove('active');
-    document.getElementById('quizScreen').classList.add('active');
+    const startScreen = document.getElementById('startScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const quizScreen = document.getElementById('quizScreen');
+
+    if (startScreen) startScreen.classList.remove('active');
+    if (gameOverScreen) gameOverScreen.classList.remove('active');
+    if (quizScreen) quizScreen.classList.add('active');
 
     const akilContainer = document.getElementById('akil-sagligi-container');
     if (akilContainer) {
         akilContainer.style.display = (gameState.zorluk === 'zor') ? 'flex' : 'none';
     }
 
-    // Senaryoyu Geç Kontrolü (10 Elmas Maliyetli)
-    let senaryoGecIstegi = document.getElementById('skipScenarioCheck') && document.getElementById('skipScenarioCheck').checked;
+    // Senaryo Geçme Kontrolü
+    const skipCheck = document.getElementById('skipScenarioCheck');
+    let senaryoGecIstegi = skipCheck ? skipCheck.checked : false;
     
     if (senaryoGecIstegi) {
         if (playerProfile.elmas >= 10) {
@@ -276,30 +343,35 @@ function startGame() {
             gizleSenaryoVeSorulariAc();
         } else {
             alert("❌ Senaryoyu geçmek için yeterli elmasın yok! (10 Elmas gerekiyor)");
-            gosterSenaryoEkrani(); // Normal senaryoya dön
+            gosterSenaryoEkrani();
         }
     } else {
-        gosterSenaryoEkrani();
+        // Eğer HTML'de senaryo kutusu yoksa direkt soruları aç
+        if (document.getElementById('scenarioBox')) {
+            gosterSenaryoEkrani();
+        } else {
+            gizleSenaryoVeSorulariAc();
+        }
     }
 }
 
 function gosterSenaryoEkrani() {
-    document.getElementById('scenarioBox').style.display = 'block';
-    document.getElementById('quizContentBox').style.display = 'none';
+    setElemDisplay('scenarioBox', 'block');
+    setElemDisplay('quizContentBox', 'none');
 }
 
 function gizleSenaryoVeSorulariAc() {
-    document.getElementById('scenarioBox').style.display = 'none';
-    document.getElementById('quizContentBox').style.display = 'block';
+    setElemDisplay('scenarioBox', 'none');
+    setElemDisplay('quizContentBox', 'block');
     updateUI();
     loadQuestion();
 }
 
 function updateUI() {
-    document.getElementById('livesCount').innerText = gameState.can;
-    document.getElementById('scoreCount').innerText = gameState.puan;
+    setElemText('livesCount', gameState.can);
+    setElemText('scoreCount', gameState.puan);
     if (gameState.zorluk === 'zor') {
-        document.getElementById('akilCount').innerText = gameState.akilSagligi;
+        setElemText('akilCount', gameState.akilSagligi);
     }
 }
 
@@ -310,22 +382,23 @@ function loadQuestion() {
     }
 
     gameState.answered = false;
-    document.getElementById('nextBtn').style.display = 'none';
+    setElemDisplay('nextBtn', 'none');
 
     const q = gameState.aktifSorular[gameState.currentIndex];
-    document.getElementById('questionNum').innerText = `Soru ${gameState.currentIndex + 1} / ${gameState.aktifSorular.length}`;
-    document.getElementById('questionText').innerText = q.soru;
+    setElemText('questionNum', `Soru ${gameState.currentIndex + 1} / ${gameState.aktifSorular.length}`);
+    setElemText('questionText', q.soru);
 
     const optionsList = document.getElementById('optionsList');
-    optionsList.innerHTML = '';
-
-    q.secenekler.forEach((opt, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerText = opt;
-        btn.onclick = () => selectOption(index, btn);
-        optionsList.appendChild(btn);
-    });
+    if (optionsList) {
+        optionsList.innerHTML = '';
+        q.secenekler.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(index, btn);
+            optionsList.appendChild(btn);
+        });
+    }
 }
 
 function selectOption(selectedIndex, btnElement) {
@@ -335,7 +408,6 @@ function selectOption(selectedIndex, btnElement) {
     const q = gameState.aktifSorular[gameState.currentIndex];
     const allBtns = document.querySelectorAll('.option-btn');
 
-    // Boost kontrolü (Aktif boost varsa çarpanlar 2 katı)
     let simdi = Date.now();
     let boostAktif = false;
     for (let bKey in playerProfile.aktifBoostlar) {
@@ -351,15 +423,14 @@ function selectOption(selectedIndex, btnElement) {
         gameState.puan += (20 * carpani);
         gameState.kazanilanAltin += (15 * carpani);
         
-        // Elmas çok zor kazanılır: Sadece %15 ihtimalle 1 elmas düşer
-        if (Math.random() < 0.15) {
+        if (Math.random() < 0.20) { // %20 ihtimalle 1 elmas
             gameState.kazanilanElmas += 1;
         }
 
         playCorrectSound();
     } else {
         btnElement.classList.add('wrong');
-        allBtns[q.cevap].classList.add('correct');
+        if (allBtns[q.cevap]) allBtns[q.cevap].classList.add('correct');
         gameState.can -= 1;
         playWrongSound();
 
@@ -374,7 +445,7 @@ function selectOption(selectedIndex, btnElement) {
     if (gameState.can <= 0 || (gameState.zorluk === 'zor' && gameState.akilSagligi <= 0)) {
         setTimeout(() => endGame(false), 1200);
     } else if (gameState.currentIndex < gameState.aktifSorular.length - 1) {
-        document.getElementById('nextBtn').style.display = 'block';
+        setElemDisplay('nextBtn', 'block');
     } else {
         setTimeout(() => endGame(true), 1500);
     }
@@ -386,21 +457,17 @@ function nextQuestion() {
 }
 
 function endGame(success) {
-    document.getElementById('quizScreen').classList.remove('active');
-    document.getElementById('gameOverScreen').classList.add('active');
+    const quizScreen = document.getElementById('quizScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    if (quizScreen) quizScreen.classList.remove('active');
+    if (gameOverScreen) gameOverScreen.classList.add('active');
 
-    const endTitle = document.getElementById('endTitle');
-    const endMessage = document.getElementById('endMessage');
-    const finalScore = document.getElementById('finalScore');
+    setElemText('finalScore', gameState.puan);
 
-    finalScore.innerText = gameState.puan;
-
-    // Ödülleri profile işle
     playerProfile.toplamPara += gameState.kazanilanAltin;
     playerProfile.elmas += gameState.kazanilanElmas;
     playerProfile.xp += gameState.puan;
 
-    // Seviye Atlama
     let gerekenXp = playerProfile.seviye * 100;
     if (playerProfile.xp >= gerekenXp) {
         playerProfile.seviye += 1;
@@ -409,22 +476,23 @@ function endGame(success) {
     saveProfile();
 
     if (success) {
-        endTitle.innerText = "🏫 Zil Çaldı, Eve Dönüş Vakti! 🎉";
-        endMessage.innerHTML = `Tebrikler ${playerProfile.isim}! Karneni alıp eve doğru yola çıktın.<br>
-        💰 <b>Kazanılan Altın:</b> +${gameState.kazanilanAltin}<br>
+        setElemText('endTitle', "🏫 Zil Çaldı, Eve Dönüş Vakti! 🎉");
+        setElemHTML('endMessage', `Tebrikler ${playerProfile.isim}! Karneni alıp eve ulaştın.<br>
+        🪙 <b>Kazanılan Altın:</b> +${gameState.kazanilanAltin}<br>
         💎 <b>Kazanılan Elmas:</b> +${gameState.kazanilanElmas}<br>
-        ⭐ <b>Toplam Puan:</b> ${gameState.puan}`;
+        ⭐ <b>Toplam Puan:</b> ${gameState.puan}`);
     } else {
-        endTitle.innerText = "😵 Sınıfta Kaldın!";
-        endMessage.innerHTML = `Canın ya da akıl sağlığın tükendi.<br>
-        💰 <b>Kazanılan Altın:</b> +${gameState.kazanilanAltin}<br>
+        setElemText('endTitle', "😵 Sınıfta Kaldın!");
+        setElemHTML('endMessage', `Canın veya akıl sağlığın tükendi.<br>
+        🪙 <b>Kazanılan Altın:</b> +${gameState.kazanilanAltin}<br>
         💎 <b>Kazanılan Elmas:</b> +${gameState.kazanilanElmas}<br>
-        ⭐ <b>Toplam Puan:</b> ${gameState.puan}`;
+        ⭐ <b>Toplam Puan:</b> ${gameState.puan}`);
     }
 }
 
 function restartGame() {
-    document.getElementById('gameOverScreen').classList.remove('active');
-    document.getElementById('startScreen').classList.add('active');
+    setElemDisplay('gameOverScreen', 'none');
+    const startScreen = document.getElementById('startScreen');
+    if (startScreen) startScreen.classList.add('active');
     renderLobby();
 }
