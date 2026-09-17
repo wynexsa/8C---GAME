@@ -11,23 +11,23 @@ const KRIZLER = [
         secenekler: [
             ["Hiçbir şey olmamış gibi defteri açıp matematik çalışmaya başla", 0, 20, 15],
             ["Arkadaşını işaret edip 'Hocam o attı, ben uyuyordum!' de", 0, 10, -5],
-            ["Sıranın altına saklanıp camdan dışarı bak", -30, 25, -10]
+            ["Sıranın altına saklanıp camdan dışarı bak", -10, 25, -10]
         ]
     },
     {
         baslik: "MATEMATİK SÖZLÜSÜ KABUSU",
         metin: "Matematik hocası tahtaya kalktı ve 'Bugün herkes sözlüye kalkacak, defterleri kapatın!' dedi. Hiçbir şey bilmiyorsun. Ne yapıyorsun?",
         secenekler: [
-            ["Karnım ağrıyor deyip hemen rehberliğe kaçmak için izin iste", -10, 15, -10],
-            ["Hocaya dik dik bakıp kara borsa kopya kağıdını çıkar", -20, 40, 25],
-            ["Allah'a emanet tahtaya çıkıp hocanın gözünün içine bakarak saçmala", -15, 30, -20]
+            ["Karnım ağrıyor deyip hemen rehberliğe kaçmak için izin iste", -5, 15, -10],
+            ["Hocaya dik dik bakıp kara borsa kopya kağıdını çıkar", -10, 30, 25],
+            ["Allah'a emanet tahtaya çıkıp hocanın gözünün içine bakarak saçmala", -5, 20, -20]
         ]
     },
     {
         baslik: "KANTİN SIRA KAVGASI",
         metin: "Teneffüste tost sırasının en önüne küçük sınıflardan biri kaynamaya çalıştı. Arkadaşların arkadan 'Yakalayın!' diye bağırdı.",
         secenekler: [
-            ["Çocuğun omzuna vurup 'Hayırdır kanka sıra var burada' diyerek kavgaya tutuş", -25, 35, 10],
+            ["Çocuğun omzuna vurup 'Hayırdır kanka sıra var burada' diyerek kavgaya tutuş", -10, 25, 10],
             ["Görmezden gelip en arkada sessizce beklemeye devam et", 0, 5, -5],
             ["Sosyal medya için olay anını videoya çekip '8-C dramaları' diye gruba at", 0, -10, 15]
         ]
@@ -37,119 +37,115 @@ const KRIZLER = [
         metin: "Beden Eğitimi dersinde hocanın yaptırdığı zorlu parkurda ayağın takıldı, bütün sınıf sana gülüyor!",
         secenekler: [
             ["Hiç bozuntuya vermeyip 'Stil olsun diye yaptım' çek", 0, 10, 10],
-            ["Yerden kalkıp utancından tuvalete kaç", -15, 35, -15],
-            ["Hocaya bakıp sakatlık numarası yaparak faaliyeti kaytarmaya çalış", -10, 20, -5]
+            ["Yerden kalkıp utancından tuvalete kaç", -5, 25, -15],
+            ["Hocaya bakıp sakatlık numarası yaparak faaliyeti kaytarmaya çalış", -5, 15, -5]
         ]
     },
     {
         baslik: "FEN LABORATUVARI KAZASI",
         metin: "Fen Bilimleri dersinde deney tüpünü karıştırırken yanlışlıkla mor bir sıvı taşırdı ve ortalık duman altı oldu!",
         secenekler: [
-            ["Hızlıca camı açıp 'Hocam ben yapmadım tüp kendi patladı!' diye suç at", -10, 30, -10],
-            ["Hocanın sert bakışları altında sessizce köşeye büzüş", -20, 40, -15],
-            ["Bilim insanı havası takınıp 'Kontrollü bir reaksiyondu hocam' de", -5, 25, 15]
+            ["Hızlıca camı açıp 'Hocam ben yapmadım tüp kendi patladı!' diye suç at", -5, 20, -10],
+            ["Hocanın sert bakışları altında sessizce köşeye büzüş", -10, 30, -15],
+            ["Bilim insanı havası takınıp 'Kontrollü bir reaksiyondu hocam' de", -5, 15, 15]
         ]
     },
     {
         baslik: "TÜRKÇE KOMPOZİSYON SUNUMU",
         metin: "Türkçe dersinde, yazdığın anlamsız kompozisyonu sesli okuman istendi. Sınıf gülmekten kırılmak üzere.",
         secenekler: [
-            ["Cesaretini toplayıp tiyatrocu gibi coşkuyla oku", 0, 15, 20],
-            ["Küp kırmızı olup kağıdı yırtmak iste", -10, 35, -10],
-            ["Ağlamaklı sesle 'Hocam sesim kısılmış okuyamam' de", -5, 20, -5]
+            ["Cesaretini toplayıp tiyatrocu gibi coşkuyla oku", 0, 10, 20],
+            ["Küp kırmızı olup kağıdı yırtmak iste", -5, 25, -10],
+            ["Ağlamaklı sesle 'Hocam sesim kısılmış okuyamam' de", -5, 15, -5]
         ]
     },
     {
         baslik: "İNKILAP TARİHİ SORUSU",
         metin: "İnkılap Tarihi dersinde hoca kalkıp en zor ve uzun antlaşma maddesini sordu. Sınıfta mutlak bir sessizlik var.",
         secenekler: [
-            ["Sallama taktiğiyle tarihteki olayları birbirine karıştırarak cevap ver", -15, 30, -10],
-            ["Parmak kaldırıp cesurca bildiğin kadarını anlat", 0, 20, 25],
-            ["Kitabın arkasına saklanıp hocanın seni görmemesini dile", -5, 25, -15]
+            ["Sallama taktiğiyle tarihteki olayları birbirine karıştırarak cevap ver", -5, 20, -10],
+            ["Parmak kaldırıp cesurca bildiğin kadarını anlat", 0, 10, 25],
+            ["Kitabın arkasına saklanıp hocanın seni görmemesini dile", -5, 15, -15]
         ]
     },
     {
         baslik: "İNGİLİZCE DİYALOG KRİZİ",
         metin: "İngilizce dersinde hocan seni tahtaya kaldırıp akıcı İngilizce diyalog kurmanı istedi. Dilin damağın kurudu.",
         secenekler: [
-            ["'Hello teacher, how are you yes yes' diyerek konuyu kapatmaya çalış", -10, 25, 5],
-            ["Tahtada taşa dönüp kelime bulamayarak kal", -20, 40, -20],
-            ["Ezberlediğin tek cümle olan 'I don't know' ile durumu kurtar", -5, 15, -5]
+            ["'Hello teacher, how are you yes yes' diyerek konuyu kapatmaya çalış", -5, 15, 5],
+            ["Tahtada taşa dönüp kelime bulamayarak kal", -10, 25, -20],
+            ["Ezberlediğin tek cümle olan 'I don't know' ile durumu kurtar", -5, 10, -5]
         ]
     },
     {
         baslik: "GÖRSEL SANATLAR MALZEME KRİZİ",
         metin: "Görsel Sanatlar dersinde boya kalemlerini unuttuğun için yan masadan otlanmaya çalışıyorsun ama kimse vermek istemiyor.",
         secenekler: [
-            ["Masadaki kalemi zorla alıp apar topar çizime başla", -10, 20, 5],
-            ["Resim yapmaktan vazgeçip kağıda alakasız karalama yap", 0, 10, -10],
-            ["Hocaya gidip 'Arkadaşım kalem vermiyor' diye şikayet et", -5, 15, 0]
+            ["Masadaki kalemi zorla alıp apar topar çizime başla", -5, 15, 5],
+            ["Resim yapmaktan vazgeçip kağıda alakasız karalama yap", 0, 5, -10],
+            ["Hocaya gidip 'Arkadaşım kalem vermiyor' diye şikayet et", -5, 10, 0]
         ]
     },
     {
         baslik: "MÜZİK DERSİNDE NOTA ŞOKU",
         metin: "Müzik dersinde herkes flüt çalarken sen arkada telefonla oynamaya çalışıyorsun. Tam o sırada hoca arkadan yaklaştı.",
         secenekler: [
-            ["Telefonu hızlıca kalemliğin altına sakla", -15, 45, -10],
-            ["Yakalanıp telefonun elinden alınma acısını yaşa", -30, 60, -35],
-            ["Hocaya gülümseyip 'Nota çalışıyorum hocam' de", -5, 25, 10]
+            ["Telefonu hızlıca kalemliğin altına sakla", -10, 30, -10],
+            ["Hocaya yakalanıp telefonun alınması acısını göğüsle", -15, 30, -20],
+            ["Hocaya gülümseyip 'Nota çalışıyorum hocam' de", -5, 15, 10]
         ]
     },
     {
         baslik: "DİN KÜLTÜRÜ ANİ SORU",
         metin: "Din Kültürü dersinde dalıp gitmişken hoca ani bir soru yöneltti: 'Evladım dinliyor musun beni, söyle bakalım?'",
         secenekler: [
-            ["Hemen toparlanıp hocanın sorusuna mantıklı bir yorum yap", 0, 15, 20],
-            ["Panikleyip 'Evet hocam haklısınız' diye alakasız bir cevap ver", -10, 25, -10],
-            ["Yere düşen silgini arıyormuş gibi yap", -5, 20, -5]
+            ["Hemen toparlanıp hocanın sorusuna mantıklı bir yorum yap", 0, 10, 20],
+            ["Panikleyip 'Evet hocam haklısınız' diye alakasız bir cevap ver", -5, 15, -10],
+            ["Yere düşen silgini arıyormuş gibi yap", -5, 10, -5]
         ]
     },
     {
         baslik: "TEKNOLOJİ VE TASARIM ATÖLYESİ",
         metin: "Teknoloji ve Tasarım atölyesinde cetvelle kesmen gereken tahtayı yanlışlıkla ortadan ikiye yamuk kestin.",
         secenekler: [
-            ["Üzerini zımparayla kapatıp 'Modern sanat bu hocam' de", -5, 20, 10],
-            ["Baştan yeni bir tahta almak için depoya koş", -20, 30, -5],
-            ["Kırık parçaları birbirine yapıştırıp hocaya çaktırmamaya çalış", -15, 35, -15]
+            ["Üzerini zımparayla kapatıp 'Modern sanat bu hocam' de", -5, 10, 10],
+            ["Baştan yeni bir tahta almak için depoya koş", -10, 20, -5],
+            ["Kırık parçaları birbirine yapıştırıp hocaya çaktırmamaya çalış", -10, 20, -15]
         ]
     },
     {
         baslik: "OKUL KORİDORUNDA KOŞU CEZASI",
         metin: "Zil çaldığı an koridorda koştururken okulun en sert disiplin hocalarından biriyle kafa kafaya çarpıştın.",
         secenekler: [
-            ["Özür dileyip hızlıca kaçmaya devam et", -20, 35, -15],
-            ["Hemen durup ceketini ilikle ve saygıyla başını öne eğ", -5, 20, 10],
-            ["Yere düşüp masum bir öğrenci taklidi yap", -15, 25, -5]
+            ["Özür dileyip hızlıca kaçmaya devam et", -10, 20, -15],
+            ["Hemen durup ceketini ilikle ve saygıyla başını öne eğ", -5, 10, 10],
+            ["Yere düşüp masum bir öğrenci taklidi yap", -10, 15, -5]
         ]
     },
     {
         baslik: "KOPYA ÇEKERKEN YAKALANMA",
         metin: "Yazılı sınavda arkadaştan kağıt isterken hoca masanın başında bitti ve kağıdı ortak yakaladı!",
         secenekler: [
-            ["Hemen 'Hocam ben kağıda bakmıyordum düşen silgimi alıyordum' de", -10, 30, -10],
-            ["Boynunu büküp 'Bir daha yapmayacağım hocam' diyerek affedilmeyi bekle", -5, 25, 5],
-            ["Kağıdı hızlıca buruşturup yutmaya çalış", -25, 50, -20]
+            ["Hemen 'Hocam ben kağıda bakmıyordum düşen silgimi alıyordum' de", -5, 20, -10],
+            ["Boynunu büküp 'Bir daha yapmayacağım hocam' diyerek affedilmeyi bekle", -5, 15, 5],
+            ["Kağıdı hızlıca buruşturup yutmaya çalış", -10, 25, -10]
         ]
     },
     {
         baslik: "SON ZİL ÇALIYOR",
         metin: "Yılın son dersinin son saniyeleri. Herkes kapıya doğru set çekmiş, zilin çökmesini bekliyor.",
         secenekler: [
-            ["Zil çalar çalmaz dışarı fırlayıp koridorda zafer turu at", 0, -30, 30],
+            ["Zil çalar çalmaz dışarı fırlayıp koridorda zafer turu at", 0, -20, 30],
             ["Sakin bir şekilde çantanı toplayıp sınıftan çık", 0, -10, 15],
-            ["Heyecandan merdivenlerden aşağı düşüp tatile hastanede başla", -40, 20, -20]
+            ["Heyecandan merdivenlerden aşağı düşüp tatile git", -15, 15, -10]
         ]
     }
 ];
 
-const BASARILI_SONLAR = [
-    "Tebrikler! Ortaokulun krizlerini, zorlu sözlüleri ve tüm engelleri zeka ile atlattın!",
-    "Müdür yardımcısının odasından hep teğet geçtin, 8-C sınıfının efsanesi olarak ortaokulu bitirdin!"
-];
-
-const BASARISIZ_SONLAR = [
-    "Maalesef krizleri yönetemedin ve disiplin kurulunun kurbanı oldun. Artık bütün okul seni konuşuyor!",
-    "Stres tavan yaptı, sicilin bozuldu ve hayatta kalma simülasyonu burada bitti!"
+const BITTIGINDE_MESAJLAR = [
+    "Tebrikler! Ne kadar kriz çıksa da en azından kazasız belasız seneyi tamamladın ve 8-C'den mezun oldun!",
+    "Zorlu anlar yaşadın, bazen stres tavan yaptı ama sonunda zili çalmayı başardın!",
+    "Ortaokul koridorlarının tozunu attırdın ve sonunda hak ettiğin tatile ulaştın!"
 ];
 
 let gameState = {
@@ -212,7 +208,8 @@ function oyunuBaslat() {
 }
 
 function soruyuGoster() {
-    if (gameState.currentIndex >= gameState.krizler.length || gameState.can <= 0 || gameState.stres >= 100) {
+    // Oyun burada sadece belirlenen soru sayısı bittiğinde biter, ölüm/game-over yoktur!
+    if (gameState.currentIndex >= gameState.krizler.length) {
         oyunuBitir();
         return;
     }
@@ -244,15 +241,16 @@ function secimYap(secimIdx) {
     let [metin, canEtki, stresEtki, basariEtki] = kriz.secenekler[secimIdx];
 
     if (gameState.zorlukModu === "2") {
-        canEtki *= 1.5;
-        stresEtki *= 1.5;
+        canEtki *= 1.3;
+        stresEtki *= 1.3;
     }
 
     gameState.can += canEtki;
     gameState.stres += stresEtki;
     gameState.basari += basariEtki;
 
-    gameState.can = Math.max(0, Math.min(100, gameState.can));
+    // Değerleri sınırla ama oyunu asla bitirme
+    gameState.can = Math.max(10, Math.min(100, gameState.can));
     gameState.stres = Math.max(0, Math.min(100, gameState.stres));
     gameState.basari = Math.max(0, Math.min(100, gameState.basari));
 
@@ -261,21 +259,19 @@ function secimYap(secimIdx) {
 
     const feedbackBox = document.getElementById('feedback-box');
     feedbackBox.style.display = 'block';
-    if (basariEtki > 0 || (canEtki === 0 && stresEtki <= 0)) {
+    
+    if (basariEtki > 0 || (canEtki === 0 && stresEtki <= 10)) {
         feedbackBox.className = 'feedback success';
-        feedbackBox.innerText = '✔ Harika hamle! Durumu başarıyla kurtardın.';
-    } else if (stresEtki > 20 || canEtki < -10) {
-        feedbackBox.className = 'feedback danger';
-        feedbackBox.innerText = '✖ Eyvah! İşler sarpa sardı, stres tavan yaptı!';
+        feedbackBox.innerText = '✔ Harika hamle! Durumu başarıyla atlattın.';
     } else {
         feedbackBox.className = 'feedback warning';
-        feedbackBox.innerText = '⚠ Eh işte, idare ettin ama dikkatli ol.';
+        feedbackBox.innerText = '⚠ İşler biraz kararsa da yola devam ediyorsun!';
     }
 
     setTimeout(() => {
         gameState.currentIndex++;
         soruyuGoster();
-    }, 3000);
+    }, 2500);
 }
 
 function oyunuBitir() {
@@ -285,19 +281,11 @@ function oyunuBitir() {
     const endHeader = document.getElementById('end-header');
     const endText = document.getElementById('end-text');
 
-    if (gameState.can <= 0 || gameState.stres >= 100) {
-        endHeader.style.color = '#f75a5a';
-        endHeader.innerText = 'OYUN BİTTİ - DİSİPLİNLİK OLDUN!';
-        endText.innerText = BASARISIZ_SONLAR[Math.floor(Math.random() * BASARISIZ_SONLAR.length)];
-    } else if (gameState.basari < 40) {
-        endHeader.style.color = '#fba94c';
-        endHeader.innerText = 'KRİZLERİ TAMAMLADIN AMA SINIFI ZOR GEÇTİN!';
-        endText.innerText = BASARISIZ_SONLAR[Math.floor(Math.random() * BASARISIZ_SONLAR.length)];
-    } else {
-        endHeader.style.color = '#00b37e';
-        endHeader.innerText = 'TEBRİKLER! YILIN ÖĞRENCİSİ OLDUN!';
-        endText.innerText = BASARILI_SONLAR[Math.floor(Math.random() * BASARILI_SONLAR.length)];
-    }
+    endHeader.style.color = '#00b37e';
+    endHeader.innerText = '🎉 ZİL ÇALDI - YILI TAMAMLADIN!';
+    
+    let rastgeleMesaj = BITTIGINDE_MESAJLAR[Math.floor(Math.random() * BITTIGINDE_MESAJLAR.length)];
+    endText.innerHTML = `${rastgeleMesaj}<br><br><b>Final Başarı Puanın:</b> ${gameState.basari} / 100<br><b>Final Stres Puanın:</b> ${gameState.stres} / 100`;
 }
 
 function anaMenuyeDon() {
