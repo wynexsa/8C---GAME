@@ -15,6 +15,8 @@
         .support-btn:hover { background: #2563eb; }
         .shop-btn { background: #eab308; color: #0f172a; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; margin: 8px 0; width: 100%; font-weight: bold; }
         .shop-btn:hover { background: #ca8a04; }
+        .leader-btn { background: #a855f7; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; margin: 8px 0; width: 100%; font-weight: bold; }
+        .leader-btn:hover { background: #9333ea; }
         .back-btn { background: #64748b; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; margin: 8px 0; width: 100%; }
         .shop-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; text-align: left; }
         .shop-card { background: #334155; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 2px solid transparent; }
@@ -26,6 +28,9 @@
         .option-btn.wrong { background: #ef4444 !important; }
         .game-header { display: flex; justify-content: space-between; background: #334155; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; }
         .card { background: #334155; padding: 15px; border-radius: 8px; margin-top: 10px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; border-bottom: 1px solid #475569; text-align: center; }
+        th { background: #334155; color: #e2e8f0; }
     </style>
 </head>
 <body>
@@ -38,25 +43,21 @@
             <span>👤 Karakter: <b id="oyuncuKarakterGosterge">Normal Öğrenci</b></span>
             <span>🪙 <b id="menuPara">100</b></span>
             <span>💎 <b id="menuElmas">10</b></span>
-            <span>⭐ Seviye: <b id="menuSeviye">1</b></span>
+            <span>⭐ Seviye: <b id="menuSeviye">1</b> (XP: <span id="menuXP">0</span>)</span>
         </div>
 
         <div style="margin: 15px 0; text-align: left;">
             <label for="mode-select"><b>Zorluk Seç:</b></label>
             <select id="mode-select" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; background: #334155; color: white; border: 1px solid #475569;">
-                <option value="normal">Normal</option>
-                <option value="zor">Zor</option>
+                <option value="kolay">Kolay Mod (5 Soru)</option>
+                <option value="normal" selected>Normal Mod (10 Soru)</option>
+                <option value="zor">Zor Mod (20 Soru)</option>
             </select>
-        </div>
-
-        <div style="margin: 10px 0; text-align: left;">
-            <label style="cursor: pointer;">
-                <input type="checkbox" id="skipScenarioCheck"> Senaryoyu Geç (💎 10 Elmas)
-            </label>
         </div>
 
         <button class="main-btn" onclick="oyunuBaslatTikla()">🚀 Oyuna Başla</button>
         <button class="shop-btn" onclick="sayfaDegis('shopScreen')">🛍️ Mağaza (Karakterler & Boostlar)</button>
+        <button class="leader-btn" onclick="liderlikAc()">🏆 Top List (Liderlik Tablosu)</button>
         <button class="support-btn" onclick="openSupport()">📧 Destek ve Öneri (qiwee617@gmail.com)</button>
     </div>
 
@@ -72,17 +73,25 @@
         <div id="characterShopList" class="shop-grid"></div>
 
         <h3 style="margin-top: 20px;">Boost Ürünleri</h3>
-        <div class="shop-grid">
-            <div class="shop-card">
-                <div><b>1 Saatlik Boost</b><br><small>2x Altın/Puan</small></div>
-                <button class="main-btn" style="width: auto; padding: 8px 12px; margin:0;" onclick="boostSatinAl('boost_1s', 'altin')">100 🪙</button>
-            </div>
-            <div class="shop-card">
-                <div><b>1 Saatlik Boost (Elmas)</b><br><small>2x Altın/Puan</small></div>
-                <button class="main-btn" style="width: auto; padding: 8px 12px; margin:0;" onclick="boostSatinAl('boost_1s', 'elmas')">2 💎</button>
-            </div>
-        </div>
+        <div class="shop-grid" id="boostShopList"></div>
 
+        <button class="back-btn" onclick="sayfaDegis('startScreen')" style="margin-top: 20px;">⬅️ Ana Menüye Dön</button>
+    </div>
+
+    <!-- Liderlik Tablosu Ekranı -->
+    <div id="leaderboardScreen" class="screen">
+        <h2>🏆 Top List - En Yüksek XP</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sıra</th>
+                    <th>Oyuncu</th>
+                    <th>XP</th>
+                    <th>Seviye</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+        </table>
         <button class="back-btn" onclick="sayfaDegis('startScreen')" style="margin-top: 20px;">⬅️ Ana Menüye Dön</button>
     </div>
 
@@ -94,12 +103,12 @@
         </div>
 
         <div id="scenarioBox" class="card">
-            <h3>📖 Senaryo Akışı</h3>
-            <p>Zil çaldı, ders başladı. Öğretmen tahtaya kalkmanı istiyor...</p>
+            <h3>📖 8-C Sınıfı Akışı</h3>
+            <p id="scenarioText">Ders zili çaldı, sıranıza geçtiniz. Hoca sınıfa girdi!</p>
         </div>
 
         <div id="quizContentBox" class="card" style="display: none;">
-            <h3 id="questionNum">Soru 1 / 5</h3>
+            <h3 id="questionNum">Soru 1 / 10</h3>
             <p id="questionText">Soru yükleniyor...</p>
             <div id="optionsList" class="options-grid"></div>
             <button id="nextBtn" class="main-btn" style="display: none; margin-top: 15px;" onclick="sonrakiSoruTikla()">Sonraki Soru</button>
