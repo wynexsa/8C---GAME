@@ -1,49 +1,65 @@
-let audioCtx = null;
-
-function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-}
-
-function playBuySound() {
-    initAudio();
-    const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(587.33, now);
-    osc.frequency.setValueAtTime(880.00, now + 0.1);
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.4);
-}
+const SAVE_KEY = '8c_game_data_v1';
 
 let playerProfile = {
     isim: "Sen (8-C)",
-    toplamPara: parseInt(localStorage.getItem('oyuncu_para')) || 100,
-    elmas: parseInt(localStorage.getItem('oyuncu_elmas')) || 10,
-    xp: parseInt(localStorage.getItem('oyuncu_xp')) || 0,
-    seviye: parseInt(localStorage.getItem('oyuncu_seviye')) || 1,
-    acilanKarakterler: JSON.parse(localStorage.getItem('acilan_karakterler')) || ["1"],
-    aktifKarakterId: localStorage.getItem('aktif_karakter') || "1",
-    aktifBoostlar: JSON.parse(localStorage.getItem('aktif_boostlar')) || {}
+    toplamPara: 100,
+    elmas: 10,
+    xp: 0,
+    seviye: 1,
+    acilanKarakterler: ["1"],
+    aktifKarakterId: "1",
+    aktifBoostlar: {}
 };
 
+function veriYukle() {
+    try {
+        const kayit = localStorage.getItem(SAVE_KEY);
+        if (kayit) {
+            const parsed = JSON.parse(kayit);
+            playerProfile = {
+                ...playerProfile,
+                ...parsed,
+                toplamPara: typeof parsed.toplamPara === 'number' && !isNaN(parsed.toplamPara) ? parsed.toplamPara : 100,
+                elmas: typeof parsed.elmas === 'number' && !isNaN(parsed.elmas) ? parsed.elmas : 10,
+                xp: typeof parsed.xp === 'number' && !isNaN(parsed.xp) ? parsed.xp : 0,
+                seviye: typeof parsed.seviye === 'number' && !isNaN(parsed.seviye) ? parsed.seviye : 1
+            };
+        }
+    } catch (e) {
+        console.error("Kayıt yüklenirken hata oluştu:", e);
+    }
+}
+
 function kaydet() {
-    localStorage.setItem('oyuncu_para', playerProfile.toplamPara);
-    localStorage.setItem('oyuncu_elmas', playerProfile.elmas);
-    localStorage.setItem('oyuncu_xp', playerProfile.xp);
-    localStorage.setItem('oyuncu_seviye', playerProfile.seviye);
-    localStorage.setItem('acilan_karakterler', JSON.stringify(playerProfile.acilanKarakterler));
-    localStorage.setItem('aktif_karakter', playerProfile.aktifKarakterId);
-    localStorage.setItem('aktif_boostlar', JSON.stringify(playerProfile.aktifBoostlar));
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(playerProfile));
+    } catch (e) {
+        console.error("Kayıt yapılırken hata oluştu:", e);
+    }
+}
+
+let audioCtx = null;
+function playBuySound() {
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.setValueAtTime(880.00, now + 0.1);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
+    } catch (e) {}
 }
 
 const KARAKTER_TIPLERI = {
@@ -60,129 +76,108 @@ const BOOST_URUNLERI = {
     "boost_kantin": { ad: "🍔 Kantin Katlayıcı", sureMs: 3600000, fiyatAltin: 500, fiyatElmas: 0, aciklama: "2x Altın Kazanımı" }
 };
 
-// --- SABİT MÜFREDAT VE OKUL YAŞAMI SORULARI ---
-const SABIT_SORULAR = [
-    { soru: "Türkçe: 'Koşarak gelen çocuk düşe kalka ilerledi.' cümlesinde kaç tane zarf-fiil vardır?", secenekler: ["1", "2", "3", "4"], cevap: 2 },
-    { soru: "İnkılap Tarihi: Mustafa Kemal'in fikir hayatını etkileyen şehirlerden hangisi yurt dışındadır?", secenekler: ["Manastır", "İstanbul", "İzmir", "Amasya"], cevap: 0 },
-    { soru: "Fen Bilimleri: Hangisi DNA'nın temel yapı birimidir?", secenekler: ["Kromozom", "Gen", "Nükleotid", "Organel"], cevap: 2 },
-    { soru: "İngilizce: 'If you want to pass LGS exam, you must...'", secenekler: ["sleep all day", "study regularly", "skip classes", "play video games"], cevap: 1 },
-    { soru: "Din Kültürü: Hangisi İslam'ın paylaşma ve yardımlaşmaya verdiği önemi gösteren farz ibadettir?", secenekler: ["Sadaka", "Zekat", "Fıtır Sadakası", "Kurban"], cevap: 1 },
-    { soru: "Türkçe: 'Ateş pahası' deyiminin anlamı nedir?", secenekler: ["Çok sıcak olmak", "Çok pahalı olmak", "Çok hızlı olmak", "Çok tehlikeli olmak"], cevap: 1 },
-    { soru: "İnkılap Tarihi: Manda ve himaye fikri ilk kez nerede reddedilmiştir?", secenekler: ["Amasya Genelgesi", "Erzurum Kongresi", "Sivas Kongresi", "Misak-ı Milli"], cevap: 1 },
-    { soru: "Fen Bilimleri: pH değeri 3 olan bir çözelti için hangisi doğrudur?", secenekler: ["Kuvvetli bazdır", "Nötrdür", "Kuvvetli asittir", "Zayıf bazdır"], cevap: 2 },
-    { soru: "8-C Mantık: Derse geç kaldın ve öğretmen içeride. Doğru davranış nedir?", secenekler: ["Kapıyı vurup izin isteyerek girmek", "Sessizce arkadan sızmak", "Kantine gitmek", "Kapıda bekleyip bağırmak"], cevap: 0 },
-    { soru: "İnkılap Tarihi: TBMM'nin varlığını tanıyan ilk devlet hangisidir?", secenekler: ["Fransa", "Ermenistan", "Sovyetler Birliği", "İngiltere"], cevap: 1 },
-    { soru: "Fen Bilimleri: Periyodik sistemde aynı grupta bulunan elementlerin nesi benzerdir?", secenekler: ["Kütle numaraları", "Kimyasal özellikleri", "Proton sayıları", "Katman sayıları"], cevap: 1 },
-    { soru: "Türkçe: Hangi cümlede sebep-sonuç ilişkisi vardır?", secenekler: ["Kar yağdığı için yollar kapandı.", "Okula gitmek üzere çıktı.", "Çalışırsan başarırsın.", "Kitap okumayı çok sever."], cevap: 0 },
-    { soru: "İngilizce: 'What is the opposite of 'Hard-working'?'", secenekler: ["Smart", "Lazy", "Kind", "Polite"], cevap: 1 },
-    { soru: "8-C Okul Yaşamı: Sınıf nöbetçisinin temel görevi nedir?", secenekler: ["Tahtayı silip sınıf düzenini sağlamak", "Derste uyumak", "Kantin sırasını bozmak", "Hocanın çantasını kaçırmak"], cevap: 0 },
-    { soru: "Din Kültürü: Hangisi insanın kendi iradesiyle seçebildiği (cüzi irade) bir durumdur?", secenekler: ["Doğum yeri", "Irkı", "Ahlaklı ve dürüst olmak", "Anne babası"], cevap: 2 },
-    { soru: "Fen Bilimleri: Katı basıncı hangisine bağlı olarak değişir?", secenekler: ["Kuvvet ve Yüzey Alanı", "Hacim ve Sıcaklık", "Yükseklik ve Yoğunluk", "Sadece Derinlik"], cevap: 0 },
-    { soru: "İnkılap Tarihi: Kurtuluş Savaşı'nın Doğu Cephesi hangi antlaşma ile kapanmıştır?", secenekler: ["Gümrü Antlaşması", "Ankara Antlaşması", "Mudanya Mütarekesi", "Lozan Antlaşması"], cevap: 0 },
-    { soru: "Türkçe: 'Ağaç yaşken eğilir' atasözünün anlamı nedir?", secenekler: ["Ağaçlar gençken budanır", "İnsanlar küçük yaşta eğitilir", "Yaşlı insanlar esnek olur", "Meyve veren ağaç taşlanır"], cevap: 1 },
-    { soru: "İngilizce: 'Sundance is a adventurous person. He loves...'", secenekler: ["extreme sports", "staying at home", "sleeping early", "doing homework"], cevap: 0 },
-    { soru: "8-C Mantık: Sınav esnasında kaleminin ucu kırıldı. Ne yapmalısın?", secenekler: ["Sessizce parmak kaldırıp öğretmeninden izin istemek", "Yanındakinin kalemini kapmak", "Sınavı bırakıp çıkmak", "Ağlamaya başlamak"], cevap: 0 }
-];
-
-// --- DİNAMİK 1000+ SORU ÜRETİCİ ALGORİTMA ---
-function dinamikSoruBankasiUret() {
-    let havuz = [...SABIT_SORULAR];
-
-    // 1. Denklem Soruları (150 Adet Varyasyon)
-    for (let a = 2; a <= 10; a++) {
-        for (let b = 1; b <= 15; b++) {
-            let x = Math.floor(Math.random() * 8) + 2;
-            let c = a * x + b;
-            havuz.push({
-                soru: `Matematik: '${a}x + ${b} = ${c}' denkleminde x kaçtır?`,
-                secenekler: [`${x}`, `${x + 1}`, `${x - 1}`, `${x + 2}`],
-                cevap: 0
-            });
-        }
-    }
-
-    // 2. Karekök Soruları (100 Adet Varyasyon)
-    for (let i = 2; i <= 25; i++) {
-        let kare = i * i;
-        havuz.push({
-            soru: `Matematik: '√${kare}' ifadesinin değeri kaçtır?`,
-            secenekler: [`${i}`, `${i - 1}`, `${i + 2}`, `${i * 2}`],
-            cevap: 0
-        });
-    }
-
-    // 3. Fen Bilimleri Element/Atom Numarası Soruları (100 Adet)
-    const elementler = [
-        { ad: "Hidrojen", sembol: "H", no: 1 }, { ad: "Helyum", sembol: "He", no: 2 },
-        { ad: "Lityum", sembol: "Li", no: 3 }, { ad: "Berilyum", sembol: "Be", no: 4 },
-        { ad: "Bor", sembol: "B", no: 5 }, { ad: "Karbon", sembol: "C", no: 6 },
-        { ad: "Azot", sembol: "N", no: 7 }, { ad: "Oksijen", sembol: "O", no: 8 },
-        { ad: "Flor", sembol: "F", no: 9 }, { ad: "Neon", sembol: "Ne", no: 10 },
-        { ad: "Sodyum", sembol: "Na", no: 11 }, { ad: "Magnezyum", sembol: "Mg", no: 12 },
-        { ad: "Alüminyum", sembol: "Al", no: 13 }, { ad: "Silisyum", sembol: "Si", no: 14 },
-        { ad: "Fosfor", sembol: "P", no: 15 }, { ad: "Kükürt", sembol: "S", no: 16 },
-        { ad: "Klor", sembol: "Cl", no: 17 }, { ad: "Argon", sembol: "Ar", no: 18 }
-    ];
-
-    elementler.forEach(e => {
-        havuz.push({
-            soru: `Fen Bilimleri: '${e.ad}' elementinin kimyasal sembolü nedir?`,
-            secenekler: [e.sembol, e.ad.substring(0,2).toUpperCase(), "X", "K"],
-            cevap: 0
-        });
-        havuz.push({
-            soru: `Fen Bilimleri: Sembolü '${e.sembol}' olan elementin atom numarası kaçtır?`,
-            secenekler: [`${e.no}`, `${e.no + 2}`, `${e.no - 1}`, `${e.no + 5}`],
-            cevap: 0
-        });
-    });
-
-    // 4. DNA Nükleotid Eşleşme Mantık Soruları (100 Adet)
-    for (let a = 100; a <= 1000; a += 50) {
-        havuz.push({
-            soru: `Fen Bilimleri: Bir DNA molekülünde ${a} Adenin varsa, kaç tane Timin bulunur?`,
-            secenekler: [`${a}`, `${a / 2}`, `${a * 2}`, `${a + 100}`],
-            cevap: 0
-        });
-    }
-
-    // 5. Üslü İfadeler Soruları (150 Adet)
-    for (let taban = 2; taban <= 5; taban++) {
-        for (let us = 2; us <= 6; us++) {
-            let sonuc = Math.pow(taban, us);
-            havuz.push({
-                soru: `Matematik: '${taban}^${us}' üslü ifadesinin değeri kaçtır?`,
-                secenekler: [`${sonuc}`, `${sonuc + taban}`, `${sonuc - 2}`, `${taban * us}`],
-                cevap: 0
-            });
-        }
-    }
-
-    // Seçenekleri Şıklar Arasında Karıştır
-    havuz.forEach(item => {
-        let dogruCevapMetni = item.secenekler[item.cevap];
-        // Şıkları karıştır
-        for (let i = item.secenekler.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [item.secenekler[i], item.secenekler[j]] = [item.secenekler[j], item.secenekler[i]];
-        }
-        item.cevap = item.secenekler.indexOf(dogruCevapMetni);
-    });
-
-    return havuz;
-}
-
-// SORU HAVUZUNU OLUŞTUR
-const TAM_SORU_HAVUZU = dinamikSoruBankasiUret();
-
-// --- FISHER-YATES GERÇEK RASTGELELEŞTİRME ALGORİTMASI ---
-function diziKaristir(dizi) {
+function arrayShuffle(dizi) {
     let kopya = [...dizi];
     for (let i = kopya.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [kopya[i], kopya[j]] = [kopya[j], kopya[i]];
     }
     return kopya;
+}
+
+function soruBankasiOlustur() {
+    let havuz = [
+        { soru: "Türkçe: 'Koşarak gelen çocuk düşe kalka ilerledi.' cümlesinde kaç tane zarf-fiil vardır?", secenekler: ["1", "2", "3", "4"], cevap: 1 },
+        { soru: "İnkılap Tarihi: Mustafa Kemal'in fikir hayatını etkileyen şehirlerden hangisi yurt dışındadır?", secenekler: ["Manastır", "İstanbul", "İzmir", "Amasya"], cevap: 0 },
+        { soru: "Fen Bilimleri: Hangisi DNA'nın temel yapı birimidir?", secenekler: ["Kromozom", "Gen", "Nükleotid", "Organel"], cevap: 2 },
+        { soru: "İngilizce: 'If you want to pass LGS exam, you must...'", secenekler: ["sleep all day", "study regularly", "skip classes", "play video games"], cevap: 1 },
+        { soru: "Din Kültürü: Hangisi İslam'ın paylaşma ve yardımlaşmaya verdiği önemi gösteren farz ibadettir?", secenekler: ["Sadaka", "Zekat", "Fıtır Sadakası", "Kurban"], cevap: 1 },
+        { soru: "Türkçe: 'Ateş pahası' deyiminin anlamı nedir?", secenekler: ["Çok sıcak olmak", "Çok pahalı olmak", "Çok hızlı olmak", "Çok tehlikeli olmak"], cevap: 1 },
+        { soru: "İnkılap Tarihi: Manda ve himaye fikri ilk kez nerede reddedilmiştir?", secenekler: ["Amasya Genelgesi", "Erzurum Kongresi", "Sivas Kongresi", "Misak-ı Milli"], cevap: 1 },
+        { soru: "Fen Bilimleri: pH değeri 3 olan bir çözelti için hangisi doğrudur?", secenekler: ["Kuvvetli bazdır", "Nötrdür", "Kuvvetli asittir", "Zayıf bazdır"], cevap: 2 },
+        { soru: "8-C Mantık: Derse geç kaldın ve öğretmen içeride. Doğru davranış nedir?", secenekler: ["Kapıyı vurup izin isteyerek girmek", "Sessizce arkadan sızmak", "Kantine gitmek", "Kapıda bekleyip bağırmak"], cevap: 0 },
+        { soru: "İnkılap Tarihi: TBMM'nin varlığını tanıyan ilk devlet hangisidir?", secenekler: ["Fransa", "Ermenistan", "Sovyetler Birliği", "İngiltere"], cevap: 1 },
+        { soru: "Fen Bilimleri: Periyodik sistemde aynı grupta bulunan elementlerin nesi benzerdir?", secenekler: ["Kütle numaraları", "Kimyasal özellikleri", "Proton sayıları", "Katman sayıları"], cevap: 1 },
+        { soru: "Türkçe: Hangi cümlede sebep-sonuç ilişkisi vardır?", secenekler: ["Kar yağdığı için yollar kapandı.", "Okula gitmek üzere çıktı.", "Çalışırsan başarırsın.", "Kitap okumayı çok sever."], cevap: 0 },
+        { soru: "İngilizce: 'What is the opposite of Hard-working?'", secenekler: ["Smart", "Lazy", "Kind", "Polite"], cevap: 1 },
+        { soru: "8-C Okul Yaşamı: Sınıf nöbetçisinin temel görevi nedir?", secenekler: ["Tahtayı silip sınıf düzenini sağlamak", "Derste uyumak", "Kantin sırasını bozmak", "Hocanın çantasını kaçırmak"], cevap: 0 },
+        { soru: "Din Kültürü: Hangisi insanın kendi iradesiyle seçebildiği (cüzi irade) bir durumdur?", secenekler: ["Doğum yeri", "Irkı", "Ahlaklı ve dürüst olmak", "Anne babası"], cevap: 2 },
+        { soru: "Fen Bilimleri: Katı basıncı hangisine bağlı olarak değişir?", secenekler: ["Kuvvet ve Yüzey Alanı", "Hacim ve Sıcaklık", "Yükseklik ve Yoğunluk", "Sadece Derinlik"], cevap: 0 },
+        { soru: "İnkılap Tarihi: Kurtuluş Savaşı'nın Doğu Cephesi hangi antlaşma ile kapanmıştır?", secenekler: ["Gümrü Antlaşması", "Ankara Antlaşması", "Mudanya Mütarekesi", "Lozan Antlaşması"], cevap: 0 },
+        { soru: "Türkçe: 'Ağaç yaşken eğilir' atasözünün anlamı nedir?", secenekler: ["Ağaçlar gençken budanır", "İnsanlar küçük yaşta eğitilir", "Yaşlı insanlar esnek olur", "Meyve veren ağaç taşlanır"], cevap: 1 },
+        { soru: "İngilizce: 'Sundance is an adventurous person. He loves...'", secenekler: ["extreme sports", "staying at home", "sleeping early", "doing homework"], cevap: 0 },
+        { soru: "8-C Mantık: Sınav esnasında kaleminin ucu kırıldı. Ne yapmalısın?", secenekler: ["Sessizce parmak kaldırıp öğretmeninden izin istemek", "Yanındakinin kalemini kapmak", "Sınavı bırakıp çıkmak", "Ağlamaya başlamak"], cevap: 0 }
+    ];
+
+    for (let a = 2; a <= 9; a++) {
+        for (let b = 1; b <= 12; b++) {
+            let x = (a % 5) + 2;
+            let c = a * x + b;
+            havuz.push({
+                soru: `Matematik: '${a}x + ${b} = ${c}' denkleminde x kaçtır?`,
+                secenekler: [`${x}`, `${x + 1}`, `${x + 2}`, `${x > 1 ? x - 1 : x + 3}`],
+                cevap: 0
+            });
+        }
+    }
+
+    for (let i = 3; i <= 30; i++) {
+        let kare = i * i;
+        havuz.push({
+            soru: `Matematik: '√${kare}' ifadesinin değeri kaçtır?`,
+            secenekler: [`${i}`, `${i + 1}`, `${i - 1}`, `${i + 2}`],
+            cevap: 0
+        });
+    }
+
+    const elemList = [
+        { ad: "Hidrojen", s: "H" }, { ad: "Helyum", s: "He" }, { ad: "Lityum", s: "Li" },
+        { ad: "Berilyum", s: "Be" }, { ad: "Bor", s: "B" }, { ad: "Karbon", s: "C" },
+        { ad: "Azot", s: "N" }, { ad: "Oksijen", s: "O" }, { ad: "Flor", s: "F" },
+        { ad: "Neon", s: "Ne" }, { ad: "Sodyum", s: "Na" }, { ad: "Magnezyum", s: "Mg" },
+        { ad: "Alüminyum", s: "Al" }, { ad: "Silisyum", s: "Si" }, { ad: "Fosfor", s: "P" },
+        { ad: "Kükürt", s: "S" }, { ad: "Klor", s: "Cl" }, { ad: "Argon", s: "Ar" }
+    ];
+    elemList.forEach((e, idx) => {
+        havuz.push({
+            soru: `Fen Bilimleri: '${e.ad}' elementinin sembolü nedir?`,
+            secenekler: [e.s, `${e.s}x`, `N${idx + 1}`, `K${idx + 1}`],
+            cevap: 0
+        });
+    });
+
+    for (let t = 2; t <= 5; t++) {
+        for (let u = 2; u <= 6; u++) {
+            let val = Math.pow(t, u);
+            havuz.push({
+                soru: `Matematik: '${t}^${u}' üslü ifadesinin sonucu kaçtır?`,
+                secenekler: [`${val}`, `${val + t}`, `${val - 1}`, `${val + 3}`],
+                cevap: 0
+            });
+        }
+    }
+
+    for (let n = 100; n <= 1000; n += 25) {
+        havuz.push({
+            soru: `Fen Bilimleri: Bir DNA zincirinde ${n} Guanin bazı varsa, karşısındaki Sitozin sayısı kaçtır?`,
+            secenekler: [`${n}`, `${n / 2}`, `${n * 2}`, `${n + 50}`],
+            cevap: 0
+        });
+    }
+
+    return havuz;
+}
+
+function soruHazirla(q) {
+    let secenekler = [...q.secenekler];
+    let dogruMetin = secenekler[q.cevap];
+    secenekler = arrayShuffle(secenekler);
+    let yeniCevap = secenekler.indexOf(dogruMetin);
+    return {
+        soru: q.soru,
+        secenekler: secenekler,
+        cevap: yeniCevap
+    };
 }
 
 let gameState = {
@@ -198,13 +193,15 @@ let gameState = {
 };
 
 window.onload = () => {
+    veriYukle();
     lobiGuncelle();
 };
 
 function sayfaDegis(hedefId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(hedefId).classList.add('active');
-    if(hedefId === 'shopScreen') lobiGuncelle();
+    const hedef = document.getElementById(hedefId);
+    if (hedef) hedef.classList.add('active');
+    if (hedefId === 'shopScreen') lobiGuncelle();
 }
 
 function openSupport() {
@@ -316,6 +313,7 @@ function boostSatinAl(boostKey, tur) {
 function liderlikAc() {
     sayfaDegis('leaderboardScreen');
     const tbody = document.getElementById('leaderboardBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     let botData = [
@@ -337,8 +335,9 @@ function liderlikAc() {
 }
 
 function oyunuBaslatTikla() {
-    initAudio();
-    gameState.zorluk = document.getElementById('mode-select').value;
+    playBuySound();
+    const modeSelect = document.getElementById('mode-select');
+    gameState.zorluk = modeSelect ? modeSelect.value : 'normal';
     
     if (gameState.zorluk === 'kolay') gameState.toplamSoruSayisi = 5;
     else if (gameState.zorluk === 'normal') gameState.toplamSoruSayisi = 10;
@@ -353,9 +352,9 @@ function oyunuBaslatTikla() {
     gameState.currentIndex = 0;
     gameState.answered = false;
 
-    // TANIMLI + DİNAMİK TÜM SORULARI Fisher-Yates İLE KARIŞTIR
-    let karistirilmisTümSorular = diziKaristir(TAM_SORU_HAVUZU);
-    gameState.aktifSorular = karistirilmisTümSorular.slice(0, gameState.toplamSoruSayisi);
+    let rawPool = soruBankasiOlustur();
+    let karistirilmis = arrayShuffle(rawPool).slice(0, gameState.toplamSoruSayisi);
+    gameState.aktifSorular = karistirilmis.map(q => soruHazirla(q));
 
     sayfaDegis('quizScreen');
     senaryoGoster();
@@ -364,7 +363,7 @@ function oyunuBaslatTikla() {
 function senaryoGoster() {
     document.getElementById('scenarioBox').style.display = 'block';
     document.getElementById('quizContentBox').style.display = 'none';
-    setTimeout(() => sorulariAc(), 1800);
+    setTimeout(() => sorulariAc(), 1500);
 }
 
 function sorulariAc() {
@@ -393,51 +392,45 @@ function soruYukle() {
 
     let optList = document.getElementById('optionsList');
     optList.innerHTML = '';
-    
-    // Soru seçeneklerini de her soru yüklendiğinde kendi içinde rastgele karıştır
-    let secenekListesi = q.secenekler.map((opt, idx) => ({ metin: opt, orijinalIdx: idx }));
-    secenekListesi = diziKaristir(secenekListesi);
 
-    secenekListesi.forEach(item => {
+    q.secenekler.forEach((optText, index) => {
         let btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.innerText = item.metin;
-        btn.onclick = () => secenekSec(item.orijinalIdx, btn);
+        btn.innerText = optText;
+        btn.onclick = () => secenekSec(index, btn);
         optList.appendChild(btn);
     });
 }
 
-function secenekSec(orijinalIdx, btn) {
+function secenekSec(secilenIndex, btn) {
     if (gameState.answered) return;
     gameState.answered = true;
     let q = gameState.aktifSorular[gameState.currentIndex];
     let allBtns = document.querySelectorAll('.option-btn');
 
     let puanKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
-    let altınKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
+    let altinKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
 
-    if (orijinalIdx === q.cevap) {
+    if (secilenIndex === q.cevap) {
         btn.classList.add('correct');
         gameState.puan += 20 * puanKatsayi;
-        gameState.kazanilanAltin += 15 * altınKatsayi;
+        gameState.kazanilanAltin += 15 * altinKatsayi;
         if (Math.random() < 0.3) gameState.kazanilanElmas += 1;
     } else {
         btn.classList.add('wrong');
-        allBtns.forEach(b => {
-            if (b.innerText === q.secenekler[q.cevap]) {
-                b.classList.add('correct');
-            }
-        });
+        if (allBtns[q.cevap]) {
+            allBtns[q.cevap].classList.add('correct');
+        }
         gameState.can -= 1;
     }
     updateUI();
 
     if (gameState.can <= 0) {
-        setTimeout(() => oyunBitir(false), 1200);
+        setTimeout(() => oyunBitir(false), 1000);
     } else if (gameState.currentIndex < gameState.aktifSorular.length - 1) {
         document.getElementById('nextBtn').style.display = 'block';
     } else {
-        setTimeout(() => oyunBitir(true), 1200);
+        setTimeout(() => oyunBitir(true), 1000);
     }
 }
 
@@ -460,6 +453,7 @@ function oyunBitir(basarili) {
         playerProfile.seviye += 1;
         alert("🎉 Seviye atladın!");
     }
+    
     kaydet();
 
     if (basarili) {
