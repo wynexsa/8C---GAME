@@ -1,4 +1,4 @@
-const SAVE_KEY = '8c_game_data_v1';
+const SAVE_KEY = '8c_game_data_v3';
 
 let playerProfile = {
     isim: "Sen (8-C)",
@@ -85,87 +85,60 @@ function arrayShuffle(dizi) {
     return kopya;
 }
 
+// --- 50 ADET EĞLENCELİ 8-C OKUL SENARYOSU ---
 function soruBankasiOlustur() {
-    let havuz = [
-        { soru: "Türkçe: 'Koşarak gelen çocuk düşe kalka ilerledi.' cümlesinde kaç tane zarf-fiil vardır?", secenekler: ["1", "2", "3", "4"], cevap: 1 },
-        { soru: "İnkılap Tarihi: Mustafa Kemal'in fikir hayatını etkileyen şehirlerden hangisi yurt dışındadır?", secenekler: ["Manastır", "İstanbul", "İzmir", "Amasya"], cevap: 0 },
-        { soru: "Fen Bilimleri: Hangisi DNA'nın temel yapı birimidir?", secenekler: ["Kromozom", "Gen", "Nükleotid", "Organel"], cevap: 2 },
-        { soru: "İngilizce: 'If you want to pass LGS exam, you must...'", secenekler: ["sleep all day", "study regularly", "skip classes", "play video games"], cevap: 1 },
-        { soru: "Din Kültürü: Hangisi İslam'ın paylaşma ve yardımlaşmaya verdiği önemi gösteren farz ibadettir?", secenekler: ["Sadaka", "Zekat", "Fıtır Sadakası", "Kurban"], cevap: 1 },
-        { soru: "Türkçe: 'Ateş pahası' deyiminin anlamı nedir?", secenekler: ["Çok sıcak olmak", "Çok pahalı olmak", "Çok hızlı olmak", "Çok tehlikeli olmak"], cevap: 1 },
-        { soru: "İnkılap Tarihi: Manda ve himaye fikri ilk kez nerede reddedilmiştir?", secenekler: ["Amasya Genelgesi", "Erzurum Kongresi", "Sivas Kongresi", "Misak-ı Milli"], cevap: 1 },
-        { soru: "Fen Bilimleri: pH değeri 3 olan bir çözelti için hangisi doğrudur?", secenekler: ["Kuvvetli bazdır", "Nötrdür", "Kuvvetli asittir", "Zayıf bazdır"], cevap: 2 },
-        { soru: "8-C Mantık: Derse geç kaldın ve öğretmen içeride. Doğru davranış nedir?", secenekler: ["Kapıyı vurup izin isteyerek girmek", "Sessizce arkadan sızmak", "Kantine gitmek", "Kapıda bekleyip bağırmak"], cevap: 0 },
-        { soru: "İnkılap Tarihi: TBMM'nin varlığını tanıyan ilk devlet hangisidir?", secenekler: ["Fransa", "Ermenistan", "Sovyetler Birliği", "İngiltere"], cevap: 1 },
-        { soru: "Fen Bilimleri: Periyodik sistemde aynı grupta bulunan elementlerin nesi benzerdir?", secenekler: ["Kütle numaraları", "Kimyasal özellikleri", "Proton sayıları", "Katman sayıları"], cevap: 1 },
-        { soru: "Türkçe: Hangi cümlede sebep-sonuç ilişkisi vardır?", secenekler: ["Kar yağdığı için yollar kapandı.", "Okula gitmek üzere çıktı.", "Çalışırsan başarırsın.", "Kitap okumayı çok sever."], cevap: 0 },
-        { soru: "İngilizce: 'What is the opposite of Hard-working?'", secenekler: ["Smart", "Lazy", "Kind", "Polite"], cevap: 1 },
-        { soru: "8-C Okul Yaşamı: Sınıf nöbetçisinin temel görevi nedir?", secenekler: ["Tahtayı silip sınıf düzenini sağlamak", "Derste uyumak", "Kantin sırasını bozmak", "Hocanın çantasını kaçırmak"], cevap: 0 },
-        { soru: "Din Kültürü: Hangisi insanın kendi iradesiyle seçebildiği (cüzi irade) bir durumdur?", secenekler: ["Doğum yeri", "Irkı", "Ahlaklı ve dürüst olmak", "Anne babası"], cevap: 2 },
-        { soru: "Fen Bilimleri: Katı basıncı hangisine bağlı olarak değişir?", secenekler: ["Kuvvet ve Yüzey Alanı", "Hacim ve Sıcaklık", "Yükseklik ve Yoğunluk", "Sadece Derinlik"], cevap: 0 },
-        { soru: "İnkılap Tarihi: Kurtuluş Savaşı'nın Doğu Cephesi hangi antlaşma ile kapanmıştır?", secenekler: ["Gümrü Antlaşması", "Ankara Antlaşması", "Mudanya Mütarekesi", "Lozan Antlaşması"], cevap: 0 },
-        { soru: "Türkçe: 'Ağaç yaşken eğilir' atasözünün anlamı nedir?", secenekler: ["Ağaçlar gençken budanır", "İnsanlar küçük yaşta eğitilir", "Yaşlı insanlar esnek olur", "Meyve veren ağaç taşlanır"], cevap: 1 },
-        { soru: "İngilizce: 'Sundance is an adventurous person. He loves...'", secenekler: ["extreme sports", "staying at home", "sleeping early", "doing homework"], cevap: 0 },
-        { soru: "8-C Mantık: Sınav esnasında kaleminin ucu kırıldı. Ne yapmalısın?", secenekler: ["Sessizce parmak kaldırıp öğretmeninden izin istemek", "Yanındakinin kalemini kapmak", "Sınavı bırakıp çıkmak", "Ağlamaya başlamak"], cevap: 0 }
+    return [
+        { soru: "Derse 5 dakika geç kaldın ve hoca kapıda dikiliyor! Ne yaparsın?", secenekler: ["'Hocam revirdeydim kan verdim' demek", "Sessizce arkadan içeri sızmak", "Kantine kaçıp tost yemek", "Kapıda bekleyip ağlamak"], cevap: 0 },
+        { soru: "Hoca listeden rastgele sözlüye adam kaldırıyor ve seninle göz göze geldi!", secenekler: ["Kalemi düşürmüş gibi yapıp sıranın altına saklanmak", "Hocaya dik dik bakıp özgüven şovu yapmak", "Öksürme krizine girmek", "Tuvalet için izin istemek"], cevap: 0 },
+        { soru: "Kantinde son kaşarlı tost kaldı ama önünde 8-A'dan biri var!", secenekler: ["'O tost dün geceden kaldı kanka' deyip aklını çelmek", "Efendi gibi sıranı beklemek", "Tostu kapıp kaçmak", "Kantinciye 50 TL rüşvet teklif etmek"], cevap: 0 },
+        { soru: "Sınıf nöbetçisisin ve müdür koridorda sana doğru yürüyor!", secenekler: ["Boş kağıtlara ciddi ciddi bakarak hızlıca yanından geçmek", "Tuvalete kaçıp kapıyı kilitlemek", "Görmezden gelip ıslık çalmak", "Koşup müdüre sarılmak"], cevap: 0 },
+        { soru: "Derste gizlice cips paketi açman gerekiyor ama ses çıkacak!", secenekler: ["Arkadaşın öksürürken paketi tek hamlede patlatmak", "Yavaşça açmaya çalışıp 'ÇIIİRT' diye ses çıkartmak", "Paketi sıranın altında dişlemek", "Hocaya ikram etmek"], cevap: 0 },
+        { soru: "Hoca 'Bu soruyu çözene sözlüye 100 veriyorum' dedi!", secenekler: ["Hiçbir şey bilmesen de özgüvenle tahtaya fırlamak", "Yanındakini dürtüp tahtaya itmek", "Kafanı sıraya gömmek", "'Hocam soru hatalı' demek"], cevap: 0 },
+        { soru: "Beden dersinde eşofmanını evde unuttun!", secenekler: ["'Hocam ayak bileğim burkuldu' deyip kenarda oturmak", "Kot pantolonla 100 metre depar atmak", "Arkadaşının şortunu ödünç alıp giymek", "Soyunma odasında ders sonuna kadar saklanmak"], cevap: 0 },
+        { soru: "Sınıfın akıllı tahtası dondu, hoca çaresizce bakıyor!", secenekler: ["Arka sıradan 'Hocam fişi çekip takalım' diye bağırmak", "Format atmaya çalışıp tahtayı tamamen bozmak", "Hocaya arkadan taktik vermek", "Hiç istifini bozmamak"], cevap: 0 },
+        { soru: "Yazılıda arkadaki arkadaşın sürekli sırtına vurup cevap istiyor!", secenekler: ["Hoca bakarken garip el hareketleriyle yanlış cevap vermek", "Kağıdı tamamen kapatıp arkana dönmemek", "Kağıdı çaktırmadan arkaya kaydırmak", "Hocaya 'Arkamdaki beni taciz ediyor' demek"], cevap: 0 },
+        { soru: "Zil çaldı ve sınıf kapısının önü izdiham alanına döndü!", secenekler: ["Çantanı kalkan yapıp kalabalığı yarmak", "Herkesin çıkmasını sakince beklemek", "Pencereden atlamayı düşünmek", "Sınıfın kapısını üzerlerine kilitlemek"], cevap: 0 },
+        { soru: "Hoca ödev kontrolü yapıyor ve sen ödevi kesinlikle yapmadın!", secenekler: ["'Hocam masadaydı annem çantama koymamış' demek", "Yanındakinin ödevini hızlıca kendi defterine geçirmek", "Hoca yaklaşınca bayılma numarası yapmak", "Dürüstçe 'Yapmadım hocam' deyip 1 almak"], cevap: 0 },
+        { soru: "Yan sıradaki arkadaşın senin sıranın üzerine silgi tozu dağıttı!", secenekler: ["Tüm tozları üfleyip onun yüzüne uçurmak", "Sessizce silgi tozlarını toplamak", "Onun sırasına çöp kovasını dökmek", "Hocaya ağlayarak şikayet etmek"], cevap: 0 },
+        { soru: "Fen labında hoca 'Sakın buna dokunmayın' dedi!", secenekler: ["Hoca arkasını dönünce parmak ucuyla dokunmak", "Tüpü yanlışlıkla devirip küçük bir patlama yaratmak", "Laboratuvardan dışarı kaçmak", "Tüpün fotoğrafını çekip gruba atmak"], cevap: 0 },
+        { soru: "Koridorda koşarken yanlışlıkla müdür yardımcısına çarptın!", secenekler: ["'Hocam ders yetişiyordu' deyip özür dileyerek ışık hızında kaçmak", "Yere düşüp ayağım kırıldı numarası yapmak", "Müdür yardımcısına 'Önüne baksana birader' demek", "Donup kalmak"], cevap: 0 },
+        { soru: "Teneffüste sınıfta pet şişeyle futbol oynarken hoca içeri girdi!", secenekler: ["Şişeyi hemen sıranın altına saklayıp test çözüyor gibi yapmak", "Şişeyi hocanın ayaklarına doğru pas atmak", "'Hocam şişeyi geri dönüşüme atıyorduk' demek", "Korkudan pencereden bakmak"], cevap: 0 },
+        { soru: "Yağmurlu günde okul bahçesinde devasa bir çamur birikintisi oluştu!", secenekler: ["Arkadaşını çaktırmadan çamurun içine itmek", "Etrafından dolaşmak", "Üzerinden çılgınca atlamaya çalışıp çamura saplanmak", "Çamurda kaydırak yapmak"], cevap: 0 },
+        { soru: "Çöp kovasına buruşturulmuş kağıtla üçlük denemesi yaptın ve kaçırdın!", secenekler: ["Hoca görmeden hemen koşup yerdeki kağıdı almak", "'Rüzgar çıktı hocam' demek", "Kağıdı başkasının attığını iddia etmek", "İkinci kağıdı atıp şansını denemek"], cevap: 0 },
+        { soru: "Derste telefonunun zil sesi son ses çalmaya başladı!", secenekler: ["Yanındakine dik dik bakıp 'Kardeşim kapatsana şu telefonu' demek", "Öksürük krizine girip sesi bastırmaya çalışmak", "Telefonu çantanın en dibine fırlatmak", "Telefonu açıp 'Dersteyim anne' demek"], cevap: 0 },
+        { soru: "Sıradaki arkadaşın derste horlayarak uyuyakalmış!", secenekler: ["Hoca tam soru sorarken arkadaşını dürtüp 'Hoca seni çağırdı' demek", "Üstünü montla örtüp uyumasına izin vermek", "Sessizce fotoğrafını çekmek", "Hocaya gösterip gülmek"], cevap: 0 },
+        { soru: "Kantinde simit alacaksın ama 5 TL eksiğin var!", secenekler: ["Kantinciye 'Yarın vereyim abi' bakışı atmak", "Arkadaşının cebinden çaktırmadan 5 TL yürütmek", "Simidin yarısını istemek", "Vazgeçip aç kalmak"], cevap: 0 },
+        { soru: "İstiklal Marşı töreninde en önde gülme krizine girdin!", secenekler: ["Dudaklarını ısırıp gökyüzüne bakarak kendini tutmaya çalışmak", "Arkadaşının arkasına saklanmak", "Ciddi durmak için matematik problemleri düşünmek", "Kahkaha atmak"], cevap: 0 },
+        { soru: "Hoca 'Arka sıra yine çok konuşuyor!' diye bağırdı!", secenekler: ["Hemen ön sıradakileri işaret edip suçu onlara atmak", "'Hocam dersle ilgili tartışıyorduk' demek", "Özür dileyip sessizleşmek", "Arka sırayı terk etmek"], cevap: 0 },
+        { soru: "Test sınavında iki şık arasında kaldın: A mı C mi?", secenekler: ["Silgiyi havaya atıp yazı tura yöntemiyle seçmek", "İkisini de işaretlemek", "Boş bırakmak", "Ön sıradakinin kağıdına bakmak"], cevap: 0 },
+        { soru: "Rehberlik öğretmeni 'Bir derdin var mı evladım?' diye sordu!", secenekler: ["'Hayat çok zor hocam' deyip 45 dakika dersten kaytarmak", "'Yok hocam sağ olun' deyip sınıfa dönmek", "Okul yemeklerini şikayet etmek", "Ağlama taklidi yapmak"], cevap: 0 },
+        { soru: "Sınıfa yeni bir nakil öğrenci geldi!", secenekler: ["İlk teneffüste yanına gidip 'Bu sınıfın kuralları var' pozu kesmek", "Hoş geldin deyip kantinden çay ısmarlamak", "Görmezden gelmek", "Onu en arka sıraya oturtmak"], cevap: 0 },
+        { soru: "Sınıf kapısının kolu aniden elinde kaldı!", secenekler: ["Çaktırmadan yerine takıp kapıyı açık bırakarak uzaklaşmak", "Kapı koluyla sınıfta şov yapmak", "Hocaya teslim etmek", "Çöpe atmak"], cevap: 0 },
+        { soru: "Yan sıradaki arkadaşın tostundan 'bir ısırık' istedi!", secenekler: ["Tostun yarısını tek hamlede ısırıp geri vermek", "Küçücük bir parça koparmak", "'Tost bozuk kanka' deyip vermemek", "Tostu ona hediye etmek"], cevap: 0 },
+        { soru: "Sessiz derste karnından devasa bir gurultu sesi yükseldi!", secenekler: ["Sandalyeyi yere sürterek sesi taklit etmeye çalışmak", "'Hocam dışarıdan inşaat sesi geliyor' demek", "Karnını tutup dışarı çıkmak", "Arkadaşına bakıp 'Öküz gibi guruldamasana' demek"], cevap: 0 },
+        { soru: "Okul kütüphanesinde tam bir sessizlik hakim!", secenekler: ["Metal kalemliği yere düşürüp deprem etkisi yaratmak", "Sessizce kitap okumak", "Fısıltıyla gıybet yapmak", "Kütüphaneciden azar yemek"], cevap: 0 },
+        { soru: "Yazılı kağıdına adını soyadını yazmayı unuttun!", secenekler: ["Kağıtlar toplanırken koşup hocanın masasında gizlice yazmak", "Hocanın ilan etmesini beklemek", "Önemsemediğin için 0 almak", "Başkasının adına sahip çıkmak"], cevap: 0 },
+        { soru: "Hoca 'Tahtayı kim siler?' diye sordu!", secenekler: ["Dersten 3 dakika kazanmak için hemen parmak kaldırmak", "Gözlerini kaçırmak", "Tahta silgisini saklamak", "Yanındakini zorla kaldırmak"], cevap: 0 },
+        { soru: "Bahçede kartopu oynarken attığın kartopu müdürün kafasına geldi!", secenekler: ["Anında yere yatıp kar meleği yapıyormuş gibi davranmak", "Arkadaşını gösterip 'O attı hocam' demek", "Okuldan kaçmak", "Müdürün yanına gidip özür dilemek"], cevap: 0 },
+        { soru: "Görsel sanatlar dersinde resim çizecek boyan kalmadı!", secenekler: ["Arkadaşının boyalarından çaktırmadan 'ödünç' alıp geri vermemek", "Siyah kalemle karalama yapmak", "Hocaya 'Resim benim ruhumda' demek", "Resim yapmamak"], cevap: 0 },
+        { soru: "Sınıfın kaloriferi bozuldu ve sınıf buz gibi!", secenekler: ["Montu ve kapüşonu çekip eskimo gibi oturmak", "Sınıfta koşarak ısınmaya çalışmak", "Müdüre dilekçe yazmak", "Teneffüste bahçede güneşlenmek"], cevap: 0 },
+        { soru: "Müzik dersinde flütle çalman gereken şarkıyı unuttun!", secenekler: ["Üfler gibi yapıp arkadaki arkadaşının sesine senkronize olmak", "Flütün içine tükürük kaçtı numarası yapmak", "Yanlış notalar basıp özgün beste yaptım demek", "Flütü evde unuttum demek"], cevap: 0 },
+        { soru: "Teneffüs bitti ama sen daha tostunu yarılayamadın!", secenekler: ["Tostu cebe atıp derste sıranın altında gizlice yemek", "Kapıda tek hamlede tostu ağzına tıkmak", "Tostu çöpe atmak", "Hocaya ikram edip derse girmek"], cevap: 0 },
+        { soru: "Hoca 'Sorusu olan var mı?' dedi ve zil çalmak üzere!", secenekler: ["Biri soru sorup dersi uzatmasın diye sınıfa ölümcül bakış atmak", "Soru sorup dersi 10 dakika uzatmak", "Çantayı toplayıp ayağa kalkmak", "Derhal dışarı fırlamak"], cevap: 0 },
+        { soru: "İngilizce dersinde hoca sana zor bir soru sordu ama anlamadın!", secenekler: ["'Yes, I agree teacher' deyip geçiştirmek", "Türkçe cevap vermek", "'I don't know' deyip oturmak", "Arkadaşına bakıp yardım istemek"], cevap: 0 },
+        { soru: "Tuvalette peçete kalmadığını son anda fark ettin!", secenekler: ["Yan kabinden 'Kardeşim peçeten var mı?' diye bağırmak", "Çantadaki test kağıdını kullanmak", "Sessizce kaderine razı olmak", "Kapıyı açıp yardım aramak"], cevap: 0 },
+        { soru: "Sınıf başkanı gürültü yapanların adını tahtaya yazıyor!", secenekler: ["Başkana kantinden çikolata ısmarla deyip adını sildirmek", "Tahta silgisini saklamak", "Başkanın adını tahtaya yazmak", "Sessizce oturmak"], cevap: 0 },
+        { soru: "Din dersinde hoca ezbere dua okutacak ve sıra sana geliyor!", secenekler: ["Sıra sana gelene kadar içinden 100 kere duayı hızlıca tekrar etmek", "Tuvalete gitmek için izin istemek", "Okuyormuş gibi yapıp mırıldanmak", "Hocam unuttum demek"], cevap: 0 },
+        { soru: "Sınıfa dev bir arı girdi ve pencereler kapalı!", secenekler: ["Tüm sınıf defterlerle arıyı kovalayıp dersi kaynatmak", "Sıranın altına saklanmak", "Pencereyi açıp arıya yol göstermek", "Sınıftan dışarı kaçmak"], cevap: 0 },
+        { soru: "Okul servisinde en arka 5'li koltuk kapışması başladı!", secenekler: ["Servise ilk binip çantanı arka koltuğa fırlatmak", "En önde şoförün yanında oturmak", "Servisi kaçırmak", "Ayakta kalmak"], cevap: 0 },
+        { soru: "Hoca 'Yazılı sonuçlarını okuyorum' dedi!", secenekler: ["İçinden bildiğin tüm duaları okuyup gözlerini kapatmak", "Sonuçları dinlemeyip kulaklarını kapatmak", "Hocaya 'Hatalı okudunuz' demek", "Sıranın altına girmek"], cevap: 0 },
+        { soru: "Ders bitti ama nöbetçi öğrenci sınıfı süpürmeni istiyor!", secenekler: ["'Benim acil kursum var kanka' deyip arkana bakmadan kaçmak", "Süpürgeyi alıp sınıfı temizlemek", "Süpürgeyi kırıp kaçmak", "Nöbetçiye çikolata vermek"], cevap: 0 },
+        { soru: "Arkadaşın sırtına 'Beni Ye' yazılı kağıt yapıştırmış!", secenekler: ["Fark edince kağıdı çıkarıp çaktırmadan onun sırtına yapıştırmak", "Tüm gün kağıtla gezmek", "Kağıdı yırtıp çöpe atmak", "Arkadaşına kışkırtıcı bakış atmak"], cevap: 0 },
+        { soru: "Okul meclis başkanlığı seçimleri başladı!", secenekler: ["'Okula serbest kıyafet getireceğim' deyip tutamayacağın vaatler vermek", "Kantin fiyatlarını düşüreceğim demek", "Aday olmamak", "Arkadaşına oy toplamak"], cevap: 0 },
+        { soru: "Hoca masada uyuklamaya başladı!", secenekler: ["Sınıfça çıt çıkarmayıp dersin bitmesini beklemek", "Masaya vurup hocayı uyandırmak", "Sınıftan gizlice çıkmak", "Hocanın fotoğrafını çekmek"], cevap: 0 },
+        { soru: "Beden eğitimi öğretmeninin düdüğünü çaldın ve yakalandın!", secenekler: ["'Hocam düdük kendiliğinden öttü vallahi' demek", "Özür dileyip 10 tur tur koşmak", "Düdüğü yere atıp kaçmak", "Düdüğü arkadaşına vermek"], cevap: 0 },
+        { soru: "Okulun son günü karneler dağıtılıyor!", secenekler: ["Belgeyi çantaya atıp 'Tatil başladı!' diye çığlık atarak kaçmak", "Okul bahçesinde arkadaşlarınla vedalaşmak", "Karneye bakmadan eve gitmek", "Hocalarla helalleşmek"], cevap: 0 }
     ];
-
-    for (let a = 2; a <= 9; a++) {
-        for (let b = 1; b <= 12; b++) {
-            let x = (a % 5) + 2;
-            let c = a * x + b;
-            havuz.push({
-                soru: `Matematik: '${a}x + ${b} = ${c}' denkleminde x kaçtır?`,
-                secenekler: [`${x}`, `${x + 1}`, `${x + 2}`, `${x > 1 ? x - 1 : x + 3}`],
-                cevap: 0
-            });
-        }
-    }
-
-    for (let i = 3; i <= 30; i++) {
-        let kare = i * i;
-        havuz.push({
-            soru: `Matematik: '√${kare}' ifadesinin değeri kaçtır?`,
-            secenekler: [`${i}`, `${i + 1}`, `${i - 1}`, `${i + 2}`],
-            cevap: 0
-        });
-    }
-
-    const elemList = [
-        { ad: "Hidrojen", s: "H" }, { ad: "Helyum", s: "He" }, { ad: "Lityum", s: "Li" },
-        { ad: "Berilyum", s: "Be" }, { ad: "Bor", s: "B" }, { ad: "Karbon", s: "C" },
-        { ad: "Azot", s: "N" }, { ad: "Oksijen", s: "O" }, { ad: "Flor", s: "F" },
-        { ad: "Neon", s: "Ne" }, { ad: "Sodyum", s: "Na" }, { ad: "Magnezyum", s: "Mg" },
-        { ad: "Alüminyum", s: "Al" }, { ad: "Silisyum", s: "Si" }, { ad: "Fosfor", s: "P" },
-        { ad: "Kükürt", s: "S" }, { ad: "Klor", s: "Cl" }, { ad: "Argon", s: "Ar" }
-    ];
-    elemList.forEach((e, idx) => {
-        havuz.push({
-            soru: `Fen Bilimleri: '${e.ad}' elementinin sembolü nedir?`,
-            secenekler: [e.s, `${e.s}x`, `N${idx + 1}`, `K${idx + 1}`],
-            cevap: 0
-        });
-    });
-
-    for (let t = 2; t <= 5; t++) {
-        for (let u = 2; u <= 6; u++) {
-            let val = Math.pow(t, u);
-            havuz.push({
-                soru: `Matematik: '${t}^${u}' üslü ifadesinin sonucu kaçtır?`,
-                secenekler: [`${val}`, `${val + t}`, `${val - 1}`, `${val + 3}`],
-                cevap: 0
-            });
-        }
-    }
-
-    for (let n = 100; n <= 1000; n += 25) {
-        havuz.push({
-            soru: `Fen Bilimleri: Bir DNA zincirinde ${n} Guanin bazı varsa, karşısındaki Sitozin sayısı kaçtır?`,
-            secenekler: [`${n}`, `${n / 2}`, `${n * 2}`, `${n + 50}`],
-            cevap: 0
-        });
-    }
-
-    return havuz;
 }
 
 function soruHazirla(q) {
@@ -387,7 +360,7 @@ function soruYukle() {
     document.getElementById('nextBtn').style.display = 'none';
     
     let q = gameState.aktifSorular[gameState.currentIndex];
-    document.getElementById('questionNum').innerText = `Soru ${gameState.currentIndex + 1} / ${gameState.aktifSorular.length}`;
+    document.getElementById('questionNum').innerText = `Senaryo ${gameState.currentIndex + 1} / ${gameState.aktifSorular.length}`;
     document.getElementById('questionText').innerText = q.soru;
 
     let optList = document.getElementById('optionsList');
@@ -457,10 +430,10 @@ function oyunBitir(basarili) {
     kaydet();
 
     if (basarili) {
-        document.getElementById('endTitle').innerText = "🏫 Zil Çaldı, Eve Dönüş Vakti! 🎉";
+        document.getElementById('endTitle').innerText = "🏫 Zil Çaldı, Günü Kurtardın! 🎉";
         document.getElementById('endMessage').innerHTML = `Tebrikler!<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
     } else {
-        document.getElementById('endTitle').innerText = "😵 Sınıfta Kaldın!";
+        document.getElementById('endTitle').innerText = "😵 Disipline Sevk Edildin!";
         document.getElementById('endMessage').innerHTML = `Canın tükendi.<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
     }
 }
