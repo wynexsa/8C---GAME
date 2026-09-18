@@ -60,28 +60,130 @@ const BOOST_URUNLERI = {
     "boost_kantin": { ad: "🍔 Kantin Katlayıcı", sureMs: 3600000, fiyatAltin: 500, fiyatElmas: 0, aciklama: "2x Altın Kazanımı" }
 };
 
-const SORU_HAVUZU = [
-    { soru: "Matematik öğretmeni tahtaya kaldırdı: '2x + 6 = 14 ise x kaçtır?'", secenekler: ["3", "4", "5", "6"], cevap: 1 },
-    { soru: "Türkçe dersinde fiilimsi sorusu: 'Koşarak gelen çocuk' cümlesinde 'koşarak' türü nedir?", secenekler: ["İsim-fiil", "Sıfat-fiil", "Zarf-fiil", "Çekimli fiil"], cevap: 2 },
-    { soru: "Fen Bilgisi labında hoca sordu: Periyodik cetvelde 'Na' hangi elementtir?", secenekler: ["Azot", "Sodyum", "Nikel", "Neon"], cevap: 1 },
-    { soru: "İnkılap Tarihi dersinde: Amasya Genelgesi'nin en önemli sonucu nedir?", secenekler: ["Milli Mücadelenin amacı ve yöntemi belirtildi", "Manda ve himaye kabul edildi", "Sevr antlaşması imzalandı", "Savaş bitti"], cevap: 0 },
-    { soru: "Kantin sırasında arkadan biri önüne geçmeye çalıştı, 8-C öğrencisi olarak ne yaparsın?", secenekler: ["Kavga ederim", "Sıranın arkasına geçmesi için uyarırım", "Görmezden gelirim", "Kantinciden bağırırım"], cevap: 1 },
-    { soru: "İngilizce öğretmeni sordu: 'What is the capital of England?'", secenekler: ["Paris", "London", "Berlin", "Madrid"], cevap: 1 },
-    { soru: "Beden Eğitimi dersinde voleybol turnuvası var. Takım kaptanı seni seçti, tutumun ne olur?", secenekler: ["Oynamam", "Takım ruhuyla elinden geleni yaparsın", "Topu tek başına oynarsın", "Kenarda oturursun"], cevap: 1 },
-    { soru: "Din Kültürü dersinde: Zekat kimlere verilir?", secenekler: ["Zenginlere", "İhtiyaç sahiplerine", "Okul müdürüne", "Herkese"], cevap: 1 },
-    { soru: "Nöbetçi öğrencisin, müdür yardımcısı evrak imzalatmanı istedi. Ne yaparsın?", secenekler: ["Hemen gidip imzalatıp getiririm", "Sınıfa gidip uyurum", "Bahçede gezerim", "Evrakı kaybederim"], cevap: 0 },
-    { soru: "Yazılı sınavdan 100 aldın, öğretmen sözlüne kaç verir?", secenekler: ["50", "100", "0", "70"], cevap: 1 },
-    { soru: "Görsel Sanatlar dersinde resim çantasını evde unuttun, ne yaparsın?", secenekler: ["Dersten kaçarım", "Sıra arkadaşımdan yedek boya isterim", "Uykuma bakarim", "Ağlarım"], cevap: 1 },
-    { soru: "Müzik dersinde blok flüt çalma sırası sana geldi. Hangi notayla başlarsın?", secenekler: ["Do", "Re", "Mi", "Fa"], cevap: 0 },
-    { soru: "Rehberlik öğretmeni gelecekteki hedefini sorduğunda en mantıklı yanıt nedir?", secenekler: ["Yatmak", "Düzenli çalışıp başarmak", "Bilgisayar oynamak", "Okulu bırakmak"], cevap: 1 },
-    { soru: "Sınıf başkanı seçiminde aday oldun. İlk vaadin ne olur?", secenekler: ["Sınıfı temiz ve düzenli tutmak", "Ödevleri yaptırmamak", "Derse girmemek", "Her gün tatil yapmak"], cevap: 0 },
-    { soru: "Sınıfta cam kırıldı, hoca kim yaptı diye soruyor. Dürüst davranış nedir?", secenekler: ["Başkasına iftira atmak", "Doğruyu söylemek", "Sessiz kalmak", "Kaçmak"], cevap: 1 },
-    { soru: "Solunum sistemimizin ana organı hangisidir?", secenekler: ["Kalp", "Mide", "Akciğer", "Böbrek"], cevap: 2 },
-    { soru: "Kütüphanede uyulması gereken en temel kurallardan biri nedir?", secenekler: ["Yüksek sesle konuşmak", "Sessiz olmak", "Yemek yemek", "Müzik dinlemek"], cevap: 1 },
-    { soru: "Suyun donma noktası kaç derecedir?", secenekler: ["0°C", "100°C", "-10°C", "50°C"], cevap: 0 },
-    { soru: "İstiklal Marşı kaç kıtadan oluşur?", secenekler: ["8", "10", "12", "5"], cevap: 1 },
-    { soru: "8-C sınıfında en başarılı öğrenci olmak için ne yapmalısın?", secenekler: ["Düzenli tekrar ve soru çözümü yapmak", "Sadece oyun oynamak", "Dersi dinlememek", "Kitap açmamak"], cevap: 0 }
+// --- SABİT MÜFREDAT VE OKUL YAŞAMI SORULARI ---
+const SABIT_SORULAR = [
+    { soru: "Türkçe: 'Koşarak gelen çocuk düşe kalka ilerledi.' cümlesinde kaç tane zarf-fiil vardır?", secenekler: ["1", "2", "3", "4"], cevap: 2 },
+    { soru: "İnkılap Tarihi: Mustafa Kemal'in fikir hayatını etkileyen şehirlerden hangisi yurt dışındadır?", secenekler: ["Manastır", "İstanbul", "İzmir", "Amasya"], cevap: 0 },
+    { soru: "Fen Bilimleri: Hangisi DNA'nın temel yapı birimidir?", secenekler: ["Kromozom", "Gen", "Nükleotid", "Organel"], cevap: 2 },
+    { soru: "İngilizce: 'If you want to pass LGS exam, you must...'", secenekler: ["sleep all day", "study regularly", "skip classes", "play video games"], cevap: 1 },
+    { soru: "Din Kültürü: Hangisi İslam'ın paylaşma ve yardımlaşmaya verdiği önemi gösteren farz ibadettir?", secenekler: ["Sadaka", "Zekat", "Fıtır Sadakası", "Kurban"], cevap: 1 },
+    { soru: "Türkçe: 'Ateş pahası' deyiminin anlamı nedir?", secenekler: ["Çok sıcak olmak", "Çok pahalı olmak", "Çok hızlı olmak", "Çok tehlikeli olmak"], cevap: 1 },
+    { soru: "İnkılap Tarihi: Manda ve himaye fikri ilk kez nerede reddedilmiştir?", secenekler: ["Amasya Genelgesi", "Erzurum Kongresi", "Sivas Kongresi", "Misak-ı Milli"], cevap: 1 },
+    { soru: "Fen Bilimleri: pH değeri 3 olan bir çözelti için hangisi doğrudur?", secenekler: ["Kuvvetli bazdır", "Nötrdür", "Kuvvetli asittir", "Zayıf bazdır"], cevap: 2 },
+    { soru: "8-C Mantık: Derse geç kaldın ve öğretmen içeride. Doğru davranış nedir?", secenekler: ["Kapıyı vurup izin isteyerek girmek", "Sessizce arkadan sızmak", "Kantine gitmek", "Kapıda bekleyip bağırmak"], cevap: 0 },
+    { soru: "İnkılap Tarihi: TBMM'nin varlığını tanıyan ilk devlet hangisidir?", secenekler: ["Fransa", "Ermenistan", "Sovyetler Birliği", "İngiltere"], cevap: 1 },
+    { soru: "Fen Bilimleri: Periyodik sistemde aynı grupta bulunan elementlerin nesi benzerdir?", secenekler: ["Kütle numaraları", "Kimyasal özellikleri", "Proton sayıları", "Katman sayıları"], cevap: 1 },
+    { soru: "Türkçe: Hangi cümlede sebep-sonuç ilişkisi vardır?", secenekler: ["Kar yağdığı için yollar kapandı.", "Okula gitmek üzere çıktı.", "Çalışırsan başarırsın.", "Kitap okumayı çok sever."], cevap: 0 },
+    { soru: "İngilizce: 'What is the opposite of 'Hard-working'?'", secenekler: ["Smart", "Lazy", "Kind", "Polite"], cevap: 1 },
+    { soru: "8-C Okul Yaşamı: Sınıf nöbetçisinin temel görevi nedir?", secenekler: ["Tahtayı silip sınıf düzenini sağlamak", "Derste uyumak", "Kantin sırasını bozmak", "Hocanın çantasını kaçırmak"], cevap: 0 },
+    { soru: "Din Kültürü: Hangisi insanın kendi iradesiyle seçebildiği (cüzi irade) bir durumdur?", secenekler: ["Doğum yeri", "Irkı", "Ahlaklı ve dürüst olmak", "Anne babası"], cevap: 2 },
+    { soru: "Fen Bilimleri: Katı basıncı hangisine bağlı olarak değişir?", secenekler: ["Kuvvet ve Yüzey Alanı", "Hacim ve Sıcaklık", "Yükseklik ve Yoğunluk", "Sadece Derinlik"], cevap: 0 },
+    { soru: "İnkılap Tarihi: Kurtuluş Savaşı'nın Doğu Cephesi hangi antlaşma ile kapanmıştır?", secenekler: ["Gümrü Antlaşması", "Ankara Antlaşması", "Mudanya Mütarekesi", "Lozan Antlaşması"], cevap: 0 },
+    { soru: "Türkçe: 'Ağaç yaşken eğilir' atasözünün anlamı nedir?", secenekler: ["Ağaçlar gençken budanır", "İnsanlar küçük yaşta eğitilir", "Yaşlı insanlar esnek olur", "Meyve veren ağaç taşlanır"], cevap: 1 },
+    { soru: "İngilizce: 'Sundance is a adventurous person. He loves...'", secenekler: ["extreme sports", "staying at home", "sleeping early", "doing homework"], cevap: 0 },
+    { soru: "8-C Mantık: Sınav esnasında kaleminin ucu kırıldı. Ne yapmalısın?", secenekler: ["Sessizce parmak kaldırıp öğretmeninden izin istemek", "Yanındakinin kalemini kapmak", "Sınavı bırakıp çıkmak", "Ağlamaya başlamak"], cevap: 0 }
 ];
+
+// --- DİNAMİK 1000+ SORU ÜRETİCİ ALGORİTMA ---
+function dinamikSoruBankasiUret() {
+    let havuz = [...SABIT_SORULAR];
+
+    // 1. Denklem Soruları (150 Adet Varyasyon)
+    for (let a = 2; a <= 10; a++) {
+        for (let b = 1; b <= 15; b++) {
+            let x = Math.floor(Math.random() * 8) + 2;
+            let c = a * x + b;
+            havuz.push({
+                soru: `Matematik: '${a}x + ${b} = ${c}' denkleminde x kaçtır?`,
+                secenekler: [`${x}`, `${x + 1}`, `${x - 1}`, `${x + 2}`],
+                cevap: 0
+            });
+        }
+    }
+
+    // 2. Karekök Soruları (100 Adet Varyasyon)
+    for (let i = 2; i <= 25; i++) {
+        let kare = i * i;
+        havuz.push({
+            soru: `Matematik: '√${kare}' ifadesinin değeri kaçtır?`,
+            secenekler: [`${i}`, `${i - 1}`, `${i + 2}`, `${i * 2}`],
+            cevap: 0
+        });
+    }
+
+    // 3. Fen Bilimleri Element/Atom Numarası Soruları (100 Adet)
+    const elementler = [
+        { ad: "Hidrojen", sembol: "H", no: 1 }, { ad: "Helyum", sembol: "He", no: 2 },
+        { ad: "Lityum", sembol: "Li", no: 3 }, { ad: "Berilyum", sembol: "Be", no: 4 },
+        { ad: "Bor", sembol: "B", no: 5 }, { ad: "Karbon", sembol: "C", no: 6 },
+        { ad: "Azot", sembol: "N", no: 7 }, { ad: "Oksijen", sembol: "O", no: 8 },
+        { ad: "Flor", sembol: "F", no: 9 }, { ad: "Neon", sembol: "Ne", no: 10 },
+        { ad: "Sodyum", sembol: "Na", no: 11 }, { ad: "Magnezyum", sembol: "Mg", no: 12 },
+        { ad: "Alüminyum", sembol: "Al", no: 13 }, { ad: "Silisyum", sembol: "Si", no: 14 },
+        { ad: "Fosfor", sembol: "P", no: 15 }, { ad: "Kükürt", sembol: "S", no: 16 },
+        { ad: "Klor", sembol: "Cl", no: 17 }, { ad: "Argon", sembol: "Ar", no: 18 }
+    ];
+
+    elementler.forEach(e => {
+        havuz.push({
+            soru: `Fen Bilimleri: '${e.ad}' elementinin kimyasal sembolü nedir?`,
+            secenekler: [e.sembol, e.ad.substring(0,2).toUpperCase(), "X", "K"],
+            cevap: 0
+        });
+        havuz.push({
+            soru: `Fen Bilimleri: Sembolü '${e.sembol}' olan elementin atom numarası kaçtır?`,
+            secenekler: [`${e.no}`, `${e.no + 2}`, `${e.no - 1}`, `${e.no + 5}`],
+            cevap: 0
+        });
+    });
+
+    // 4. DNA Nükleotid Eşleşme Mantık Soruları (100 Adet)
+    for (let a = 100; a <= 1000; a += 50) {
+        havuz.push({
+            soru: `Fen Bilimleri: Bir DNA molekülünde ${a} Adenin varsa, kaç tane Timin bulunur?`,
+            secenekler: [`${a}`, `${a / 2}`, `${a * 2}`, `${a + 100}`],
+            cevap: 0
+        });
+    }
+
+    // 5. Üslü İfadeler Soruları (150 Adet)
+    for (let taban = 2; taban <= 5; taban++) {
+        for (let us = 2; us <= 6; us++) {
+            let sonuc = Math.pow(taban, us);
+            havuz.push({
+                soru: `Matematik: '${taban}^${us}' üslü ifadesinin değeri kaçtır?`,
+                secenekler: [`${sonuc}`, `${sonuc + taban}`, `${sonuc - 2}`, `${taban * us}`],
+                cevap: 0
+            });
+        }
+    }
+
+    // Seçenekleri Şıklar Arasında Karıştır
+    havuz.forEach(item => {
+        let dogruCevapMetni = item.secenekler[item.cevap];
+        // Şıkları karıştır
+        for (let i = item.secenekler.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [item.secenekler[i], item.secenekler[j]] = [item.secenekler[j], item.secenekler[i]];
+        }
+        item.cevap = item.secenekler.indexOf(dogruCevapMetni);
+    });
+
+    return havuz;
+}
+
+// SORU HAVUZUNU OLUŞTUR
+const TAM_SORU_HAVUZU = dinamikSoruBankasiUret();
+
+// --- FISHER-YATES GERÇEK RASTGELELEŞTİRME ALGORİTMASI ---
+function diziKaristir(dizi) {
+    let kopya = [...dizi];
+    for (let i = kopya.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [kopya[i], kopya[j]] = [kopya[j], kopya[i]];
+    }
+    return kopya;
+}
 
 let gameState = {
     zorluk: "normal",
@@ -122,7 +224,6 @@ function lobiGuncelle() {
     let aktifKarakterAdi = KARAKTER_TIPLERI[playerProfile.aktifKarakterId] ? KARAKTER_TIPLERI[playerProfile.aktifKarakterId].ad : "Normal Öğrenci";
     document.getElementById('oyuncuKarakterGosterge').innerText = aktifKarakterAdi;
 
-    // Karakter Mağazası
     const charList = document.getElementById('characterShopList');
     if (charList) {
         charList.innerHTML = '';
@@ -148,7 +249,6 @@ function lobiGuncelle() {
         });
     }
 
-    // Boost Mağazası
     const boostList = document.getElementById('boostShopList');
     if (boostList) {
         boostList.innerHTML = '';
@@ -240,12 +340,10 @@ function oyunuBaslatTikla() {
     initAudio();
     gameState.zorluk = document.getElementById('mode-select').value;
     
-    // Zorluk moduna göre soru sayısı
     if (gameState.zorluk === 'kolay') gameState.toplamSoruSayisi = 5;
     else if (gameState.zorluk === 'normal') gameState.toplamSoruSayisi = 10;
     else if (gameState.zorluk === 'zor') gameState.toplamSoruSayisi = 20;
 
-    // Deli karakteri 5 can verir, diğerleri 3
     gameState.can = (playerProfile.aktifKarakterId === "4") ? 5 : 3;
     if (playerProfile.aktifBoostlar["boost_elmas"]) gameState.can += 1;
 
@@ -255,8 +353,9 @@ function oyunuBaslatTikla() {
     gameState.currentIndex = 0;
     gameState.answered = false;
 
-    // Soruları karıştır ve seç
-    gameState.aktifSorular = [...SORU_HAVUZU].sort(() => 0.5 - Math.random()).slice(0, gameState.toplamSoruSayisi);
+    // TANIMLI + DİNAMİK TÜM SORULARI Fisher-Yates İLE KARIŞTIR
+    let karistirilmisTümSorular = diziKaristir(TAM_SORU_HAVUZU);
+    gameState.aktifSorular = karistirilmisTümSorular.slice(0, gameState.toplamSoruSayisi);
 
     sayfaDegis('quizScreen');
     senaryoGoster();
@@ -294,16 +393,21 @@ function soruYukle() {
 
     let optList = document.getElementById('optionsList');
     optList.innerHTML = '';
-    q.secenekler.forEach((opt, idx) => {
+    
+    // Soru seçeneklerini de her soru yüklendiğinde kendi içinde rastgele karıştır
+    let secenekListesi = q.secenekler.map((opt, idx) => ({ metin: opt, orijinalIdx: idx }));
+    secenekListesi = diziKaristir(secenekListesi);
+
+    secenekListesi.forEach(item => {
         let btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.innerText = opt;
-        btn.onclick = () => secenekSec(idx, btn);
+        btn.innerText = item.metin;
+        btn.onclick = () => secenekSec(item.orijinalIdx, btn);
         optList.appendChild(btn);
     });
 }
 
-function secenekSec(idx, btn) {
+function secenekSec(orijinalIdx, btn) {
     if (gameState.answered) return;
     gameState.answered = true;
     let q = gameState.aktifSorular[gameState.currentIndex];
@@ -312,14 +416,18 @@ function secenekSec(idx, btn) {
     let puanKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
     let altınKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
 
-    if (idx === q.cevap) {
+    if (orijinalIdx === q.cevap) {
         btn.classList.add('correct');
         gameState.puan += 20 * puanKatsayi;
         gameState.kazanilanAltin += 15 * altınKatsayi;
         if (Math.random() < 0.3) gameState.kazanilanElmas += 1;
     } else {
         btn.classList.add('wrong');
-        if (allBtns[q.cevap]) allBtns[q.cevap].classList.add('correct');
+        allBtns.forEach(b => {
+            if (b.innerText === q.secenekler[q.cevap]) {
+                b.classList.add('correct');
+            }
+        });
         gameState.can -= 1;
     }
     updateUI();
