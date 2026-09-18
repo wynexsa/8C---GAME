@@ -1,4 +1,4 @@
-const SAVE_KEY = '8c_game_data_v3';
+const SAVE_KEY = '8c_game_data_v1';
 
 let playerProfile = {
     isim: "Sen (8-C)",
