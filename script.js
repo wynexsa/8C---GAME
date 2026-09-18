@@ -539,3 +539,32 @@ function anaMenuyeDon() {
     sayfaDegis('startScreen');
     lobiGuncelle();
 }
+const senaryolar = [
+    {
+        soru: "Matematik hocası ansızın sözlü yapmaya karar verdi ve gözlerini sınıfta gezdirmeye başladı!",
+        secenekler: [
+            {
+                metin: "Göz temasından kaçın, silgini düşürmüş gibi yap.",
+                can: 0,
+                stres: 10,
+                puan: 15,
+                sonuc: "🙈 Hoca seni fark etmedi ve yan sıradaki arkadaşını kaldırdı! Kıl payı kurtuldun ama stresin biraz arttı."
+            },
+            {
+                metin: "Kendinden emin bir şekilde hocanın gözlerinin içine bak.",
+                can: -15,
+                stres: 20,
+                puan: 30,
+                sonuc: "👨‍🏫 Hoca özgüvenine hayran kaldı ama seni tahtaya kaldırdı! Soruyu tam çözemeyince hocanın gözünden biraz düştün."
+            },
+            {
+                metin: "Arka sıradaki arkadaşının arkasına saklan.",
+                can: -5,
+                stres: 5,
+                puan: 5,
+                sonuc: "😅 Saklandığını gören hoca hafifçe gülümsedi ama şimdilik pas geçti. Yine de karizmayı biraz çizdirdin."
+            }
+        ]
+    }
+    // Diğer senaryolar da bu yapıda olacak...
+];
