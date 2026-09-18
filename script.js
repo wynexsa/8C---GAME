@@ -1,6 +1,3 @@
-// ==========================================
-// 1. OYUN DURUMU (GAME STATE)
-// ==========================================
 let gameState = {
     para: 100,
     elmas: 10,
@@ -12,17 +9,18 @@ let gameState = {
     mevcutSoruIndex: 0,
     toplamSoruSayisi: 10,
     zorluk: 'normal',
-    seciliKarakter: 'Normal Öğrenci'
+    seciliKarakter: 'Normal Öğrenci',
+    envanter: {
+        kahve: 0,
+        papatya: 0
+    }
 };
 
-// ==========================================
-// 2. MAĞAZA VE LİDERLİK VERİLERİ
-// ==========================================
 const karakterler = [
     { id: 'normal', isim: 'Normal Öğrenci', fiyat: 0, birim: 'altin', aciklama: 'Dengeli istatistikler.', satinAlindi: true },
-    { id: 'inekk', isim: 'Çalışkan İnek', fiyat: 150, birim: 'altin', aciklama: 'Daha az stres kazanır.', satinAlindi: false },
-    { id: 'palyaco', isim: 'Sınıf Palyaçosu', fiyat: 200, birim: 'altin', aciklama: 'Espri gücüyle stresi hızlı düşürür.', satinAlindi: false },
-    { id: 'havali', isim: 'Arka Sıradaki Havalı', fiyat: 15, birim: 'elmas', aciklama: 'Hocalardan daha az ceza alır.', satinAlindi: false }
+    { id: 'inekk', isim: 'İnek', fiyat: 150, birim: 'altin', aciklama: 'Daha az stres kazanır.', satinAlindi: false },
+    { id: 'arkasira', isim: 'Arka Sıra Tayfası', fiyat: 200, birim: 'altin', aciklama: 'Grup dayanışmasıyla stresi hızlı düşürür.', satinAlindi: false },
+    { id: 'deli', isim: 'Sınıfın Delisi', fiyat: 50, birim: 'elmas', aciklama: 'Daha fazla can ve azaltılmış stres.', satinAlindi: false }
 ];
 
 const boostlar = [
@@ -30,17 +28,8 @@ const boostlar = [
     { id: 'papatya', isim: 'Papatya Çayı', fiyat: 25, birim: 'altin', aciklama: 'Stresi -%20 azaltır.' }
 ];
 
-const liderlikVerisi = [
-    { isim: 'Ahmet_8C', xp: 2400, seviye: 12 },
-    { isim: 'Zeynep_Pro', xp: 1950, seviye: 10 },
-    { isim: 'Efe_Kral', xp: 1600, seviye: 8 },
-    { isim: 'MehmetT', xp: 1200, seviye: 6 },
-    { isim: 'Selin_S', xp: 850, seviye: 4 }
 ];
 
-// ==========================================
-// 3. SENARYOLAR VE SONUÇLARI (HİKAYE AKIŞI)
-// ==========================================
 const senaryolar = [
     {
         soru: "Matematik hocası ansızın sözlü yapmaya karar verdi ve gözlerini sınıfta gezdirmeye başladı!",
@@ -69,7 +58,7 @@ const senaryolar = [
         ]
     },
     {
-        soru: "Kantin sırasında biri önün geçti ve 'Arkadaşıma sıra tutuyordum' dedi.",
+        soru: "Kantin sırasında biri önüne geçti ve 'Arkadaşıma sıra tutuyordum' dedi.",
         secenekler: [
             {
                 metin: "Sertçe uyar ve sıranın arkasına geçmesini söyle.",
@@ -304,9 +293,6 @@ const senaryolar = [
     }
 ];
 
-// ==========================================
-// 4. EKRAN VE ARAYÜZ YÖNETİMİ
-// ==========================================
 function sayfaDegis(targetScreenId) {
     const screens = document.querySelectorAll('.screen');
     screens.forEach(screen => screen.classList.remove('active'));
@@ -319,14 +305,21 @@ function sayfaDegis(targetScreenId) {
 }
 
 function updateUI() {
-    // Menu Bilgileri
-    document.getElementById('menuPara').innerText = gameState.para;
-    document.getElementById('menuElmas').innerText = gameState.elmas;
-    document.getElementById('menuSeviye').innerText = gameState.seviye;
-    document.getElementById('menuXP').innerText = gameState.xp;
-    document.getElementById('oyuncuKarakterGosterge').innerText = gameState.seciliKarakter;
+    const menuPara = document.getElementById('menuPara');
+    if (menuPara) menuPara.innerText = gameState.para;
 
-    // Oyun İçi Üst Bar (Yüzdelik Format)
+    const menuElmas = document.getElementById('menuElmas');
+    if (menuElmas) menuElmas.innerText = gameState.elmas;
+
+    const menuSeviye = document.getElementById('menuSeviye');
+    if (menuSeviye) menuSeviye.innerText = gameState.seviye;
+
+    const menuXP = document.getElementById('menuXP');
+    if (menuXP) menuXP.innerText = gameState.xp;
+
+    const gosterge = document.getElementById('oyuncuKarakterGosterge');
+    if (gosterge) gosterge.innerText = gameState.seciliKarakter;
+
     const livesElem = document.getElementById('livesCount');
     if (livesElem) livesElem.innerText = `%${gameState.can}`;
 
@@ -336,7 +329,12 @@ function updateUI() {
     const scoreElem = document.getElementById('scoreCount');
     if (scoreElem) scoreElem.innerText = gameState.puan;
 
-    // Mağaza
+    const btnKahve = document.getElementById('btnKahveKullan');
+    if (btnKahve) btnKahve.innerText = `⚡ Enerji İçeceği (${gameState.envanter.kahve})`;
+
+    const btnPapatya = document.getElementById('btnPapatyaKullan');
+    if (btnPapatya) btnPapatya.innerText = `🍵 Papatya Çayı (${gameState.envanter.papatya})`;
+
     const shopPara = document.getElementById('shopPara');
     if (shopPara) shopPara.innerText = gameState.para;
 
@@ -344,9 +342,6 @@ function updateUI() {
     if (shopElmas) shopElmas.innerText = gameState.elmas;
 }
 
-// ==========================================
-// 5. OYUN AKIŞ MANTIĞI (GAMEPLAY)
-// ==========================================
 function oyunuBaslatTikla() {
     const zorlukSecimi = document.getElementById('mode-select').value;
     gameState.zorluk = zorlukSecimi;
@@ -365,7 +360,6 @@ function oyunuBaslatTikla() {
 }
 
 function soruYukle() {
-    // Sonuç kutusunu gizle, şıklar kutusunu aç
     const sonucKutusu = document.getElementById('resultOutcomeBox');
     if (sonucKutusu) sonucKutusu.style.display = 'none';
 
@@ -392,21 +386,17 @@ function secimYap(secenekIndex) {
     const mevcutSenaryo = senaryolar[gameState.mevcutSoruIndex];
     const secim = mevcutSenaryo.secenekler[secenekIndex];
 
-    // 1. Etkileri uygula
     gameState.can += secim.can;
     gameState.stres += secim.stres;
     gameState.puan += secim.puan;
 
-    // Sınır kontrolleri (%0 - %100)
     if (gameState.can > 100) gameState.can = 100;
     if (gameState.stres < 0) gameState.stres = 0;
 
     updateUI();
 
-    // 2. Şıkları Gizle
     document.getElementById('optionsList').style.display = 'none';
 
-    // 3. Hikaye Devamı (Sonuç) Kutusunu Olustur/Goster
     let sonucKutusu = document.getElementById('resultOutcomeBox');
     if (!sonucKutusu) {
         sonucKutusu = document.createElement('div');
@@ -414,10 +404,9 @@ function secimYap(secenekIndex) {
         document.getElementById('quizContentBox').insertBefore(sonucKutusu, document.getElementById('nextBtn'));
     }
 
-    // Etki Değişim Özetini Hazırla
     let etkiOzeti = [];
     if (secim.puan !== 0) etkiOzeti.push(`${secim.puan > 0 ? '+' : ''}${secim.puan} Puan`);
-    if (secim.can !== 0) etkiOzeti.push(`${secim.can > 0 ? '' : ''}${secim.can}% Can`);
+    if (secim.can !== 0) etkiOzeti.push(`${secim.can > 0 ? '+' : ''}${secim.can}% Can`);
     if (secim.stres !== 0) etkiOzeti.push(`${secim.stres > 0 ? '+' : ''}${secim.stres}% Stres`);
 
     sonucKutusu.innerHTML = `
@@ -428,7 +417,6 @@ function secimYap(secenekIndex) {
     `;
     sonucKutusu.style.display = 'block';
 
-    // 4. Ölüm veya Yenilgi Kontrolü
     if (gameState.can <= 0) {
         oyunuBitir(false, "❤️ Canın bitti! Okul hayatının stresi seni pes ettirdi.");
         return;
@@ -438,7 +426,6 @@ function secimYap(secenekIndex) {
         return;
     }
 
-    // 5. İlerleme Butonunu Göster
     document.getElementById('nextBtn').style.display = 'block';
 }
 
@@ -461,14 +448,12 @@ function oyunuBitir(kazandi, mesaj) {
         endTitle.innerText = "🏆 Başarılı!";
         endTitle.style.color = "#22c55e";
 
-        // Kazanılan Ödüller
         const kazanilanXP = gameState.puan * 2;
         const kazanilanPara = Math.floor(gameState.puan / 2);
 
         gameState.xp += kazanilanXP;
         gameState.para += kazanilanPara;
 
-        // Seviye Atlama Kontrolü
         if (gameState.xp >= gameState.seviye * 100) {
             gameState.seviye++;
             mesaj += `<br><br>🌟 <b>SEVİYE ATLADIN! Yeni Seviye: ${gameState.seviye}</b>`;
@@ -489,9 +474,6 @@ function anaMenuyeDon() {
     sayfaDegis('startScreen');
 }
 
-// ==========================================
-// 6. MAĞAZA İŞLEMLERİ
-// ==========================================
 function magazayiYukle() {
     const charList = document.getElementById('characterShopList');
     if (!charList) return;
@@ -523,7 +505,6 @@ function magazayiYukle() {
         charList.appendChild(card);
     });
 
-    // Boostlar Listesi
     const boostList = document.getElementById('boostShopList');
     if (!boostList) return;
 
@@ -552,12 +533,10 @@ function karakterSatinal(id) {
         gameState.para -= char.fiyat;
         char.satinAlindi = true;
         karakterSec(char.isim);
-        alert(`${char.isim} satın alındı!`);
     } else if (char.birim === 'elmas' && gameState.elmas >= char.fiyat) {
         gameState.elmas -= char.fiyat;
         char.satinAlindi = true;
         karakterSec(char.isim);
-        alert(`${char.isim} satın alındı!`);
     } else {
         alert("Yetersiz bakiye!");
     }
@@ -577,29 +556,45 @@ function boostSatinal(id) {
 
     if (gameState.para >= boost.fiyat) {
         gameState.para -= boost.fiyat;
-        if (id === 'kahve') {
-            gameState.can = Math.min(100, gameState.can + 20);
-            alert("Kahve içtin! Canın %20 arttı.");
-        } else if (id === 'papatya') {
-            gameState.stres = Math.max(0, gameState.stres - 20);
-            alert("Papatya çayı içtin! Stresin %20 azaldı.");
-        }
+        gameState.envanter[id]++;
     } else {
         alert("Yetersiz Altın!");
     }
+    magazayiYukle();
     updateUI();
 }
 
-// ==========================================
-// 7. LİDERLİK TABLOSU VE DESTEK
-// ==========================================
+function esyaKullan(id) {
+    if (gameState.envanter[id] <= 0) {
+        alert("Bu eşyadan envanterinde kalmadı!");
+        return;
+    }
+
+    if (id === 'kahve') {
+        if (gameState.can >= 100) {
+            alert("Canın zaten tam (%100)!");
+            return;
+        }
+        gameState.can = Math.min(100, gameState.can + 20);
+        gameState.envanter.kahve--;
+    } else if (id === 'papatya') {
+        if (gameState.stres <= 0) {
+            alert("Stresin zaten %0!");
+            return;
+        }
+        gameState.stres = Math.max(0, gameState.stres - 20);
+        gameState.envanter.papatya--;
+    }
+
+    updateUI();
+}
+
 function liderlikAc() {
     sayfaDegis('leaderboardScreen');
     const tbody = document.getElementById('leaderboardBody');
     if (!tbody) return;
 
     tbody.innerHTML = '';
-    // Kendi skorumuzu da ekleyelim
     const liste = [...liderlikVerisi, { isim: 'SEN', xp: gameState.xp, seviye: gameState.seviye }];
     liste.sort((a, b) => b.xp - a.xp);
 
@@ -620,9 +615,6 @@ function openSupport() {
     alert("📧 Destek ve Geri Bildirim\n\nHer türlü soru ve önerileriniz için okul simülatörü geliştirici ekibiyle iletişime geçebilirsiniz.");
 }
 
-// ==========================================
-// 8. İLK YÜKLEME (INIT)
-// ==========================================
 window.onload = function() {
     updateUI();
     magazayiYukle();
