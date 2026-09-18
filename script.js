@@ -1,544 +1,46 @@
-const SAVE_KEY = '8c_game_data_v1';
-
-let playerProfile = {
-    isim: "Sen (8-C)",
-    toplamPara: 100,
-    elmas: 10,
-    xp: 0,
-    seviye: 1,
-    acilanKarakterler: ["1"],
-    aktifKarakterId: "1",
-    aktifBoostlar: {}
-};
-
-function veriYukle() {
-    try {
-        const kayit = localStorage.getItem(SAVE_KEY);
-        if (kayit) {
-            const parsed = JSON.parse(kayit);
-            playerProfile = {
-                ...playerProfile,
-                ...parsed,
-                toplamPara: typeof parsed.toplamPara === 'number' && !isNaN(parsed.toplamPara) ? parsed.toplamPara : 100,
-                elmas: typeof parsed.elmas === 'number' && !isNaN(parsed.elmas) ? parsed.elmas : 10,
-                xp: typeof parsed.xp === 'number' && !isNaN(parsed.xp) ? parsed.xp : 0,
-                seviye: typeof parsed.seviye === 'number' && !isNaN(parsed.seviye) ? parsed.seviye : 1
-            };
-        }
-    } catch (e) {
-        console.error("Kayıt yüklenirken hata oluştu:", e);
-    }
-}
-
-function kaydet() {
-    try {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(playerProfile));
-    } catch (e) {
-        console.error("Kayıt yapılırken hata oluştu:", e);
-    }
-}
-
-let audioCtx = null;
-function playBuySound() {
-    try {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(587.33, now);
-        osc.frequency.setValueAtTime(880.00, now + 0.1);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.4);
-    } catch (e) {}
-}
-
-const KARAKTER_TIPLERI = {
-    "1": { ad: "Normal Öğrenci", fiyatAltin: 0, fiyatElmas: 0, ciftPara: false, maxCan: 100, aciklama: "Standart 100 Can ile başlar." },
-    "2": { ad: "Sınav Canavarı", fiyatAltin: 150, fiyatElmas: 0, ciftPara: false, maxCan: 100, aciklama: "Ekstra Puan kazanır." },
-    "3": { ad: "Arka Sıra Filozofu", fiyatAltin: 250, fiyatElmas: 0, ciftPara: false, maxCan: 110, aciklama: "+10 Can ve Ekstra Altın kazanır." },
-    "4": { ad: "⚡ DELİ (Süper Güçlü OP)", fiyatAltin: 1000, fiyatElmas: 5, ciftPara: true, maxCan: 150, aciklama: "150 Can başlar, 2x Altın & Puan kazanır!" }
-};
-
-const BOOST_URUNLERI = {
-    "boost_1s": { ad: "1 Saatlik Boost", sureMs: 3600000, fiyatAltin: 100, fiyatElmas: 0, aciklama: "1.5x Puan" },
-    "boost_mega": { ad: "🚀 Mega XP Katlayıcı", sureMs: 7200000, fiyatAltin: 250, fiyatElmas: 0, aciklama: "2x XP Kazanımı" },
-    "boost_elmas": { ad: "🛡️ Elmas Kalkanı", sureMs: 3600000, fiyatAltin: 0, fiyatElmas: 3, aciklama: "+20 Ekstra Can" },
-    "boost_kantin": { ad: "🍔 Kantin Katlayıcı", sureMs: 3600000, fiyatAltin: 500, fiyatElmas: 0, aciklama: "2x Altın Kazanımı" }
-};
-
-function arrayShuffle(dizi) {
-    let kopya = [...dizi];
-    for (let i = kopya.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [kopya[i], kopya[j]] = [kopya[j], kopya[i]];
-    }
-    return kopya;
-}
-
-// --- 3 SEÇENEKLİ DERECE SİSTEMLİ SENARYOLAR ---
-function soruBankasiOlustur() {
-    return [
-        {
-            soru: "Derse 5 dakika geç kaldın ve hoca kapıda dikiliyor!",
-            secenekler: [
-                { metin: "'Hocam revirdeydim, sevk kağıdım burada' demek", derece: "tam" },
-                { metin: "Sessizce arkadan içeri sızmaya çalışmak", derece: "orta" },
-                { metin: "Kantine kaçıp tost yemek", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Hoca listeden rastgele sözlüye adam kaldırıyor ve seninle göz göze geldi!",
-            secenekler: [
-                { metin: "Özgüvenle gözlerinin içine bakıp soruyu beklemek", derece: "tam" },
-                { metin: "Kalemi düşürmüş gibi yapıp sıranın altına eğilmek", derece: "orta" },
-                { metin: "Aniden ayağa kalkıp 'Tuvalete kaçmam lazım!' diye bağırmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Kantinde son kaşarlı tost kaldı ama önünde 8-A'dan biri var!",
-            secenekler: [
-                { metin: "'O tost dün geceden kaldı kanka' deyip aklını çelmek", derece: "tam" },
-                { metin: "Efendi gibi sıranın kendisine gelmesini beklemek", derece: "orta" },
-                { metin: "Tostu tezgahtan kapıp koridorda depar atmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Sınıf nöbetçisisin ve müdür koridorda sana doğru yürüyor!",
-            secenekler: [
-                { metin: "Eldeki evraklara ciddi ciddi bakarak hızlıca yanından geçmek", derece: "tam" },
-                { metin: "Durup askeri selam vermek", derece: "orta" },
-                { metin: "Korkudan tuvalete kaçıp kapıyı kitlemek", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Derste gizlice cips paketi açman gerekiyor ama ses çıkacak!",
-            secenekler: [
-                { metin: "Arkadaşın öksürürken paketi tek hamlede açmak", derece: "tam" },
-                { metin: "Paketi sıranın altında yavaşça gıdım gıdım yırtmak", derece: "orta" },
-                { metin: "Paketi patlatarak açmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Hoca 'Bu soruyu çözene sözlüye 100 veriyorum' dedi!",
-            secenekler: [
-                { metin: "Mantıklı bir tahmin yapıp tahtaya kalkmak", derece: "tam" },
-                { metin: "Yanındakini dürtüp tahtaya itmek", derece: "orta" },
-                { metin: "'Hocam soru külliyen hatalı' diye bağırmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Beden dersinde eşofmanını evde unuttun!",
-            secenekler: [
-                { metin: "'Hocam bileğim burkuldu' deyip kenarda maçı izlemek", derece: "tam" },
-                { metin: "Kot pantolonla sahaya çıkıp oynamak", derece: "orta" },
-                { metin: "Soyunma odasına saklanıp ders sonuna kadar çıkmamak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Sınıfın akıllı tahtası dondu, hoca çaresizce bakıyor!",
-            secenekler: [
-                { metin: "Kibarca 'Hocam fişi çekip takalım mı?' demek", derece: "tam" },
-                { metin: "Ekrana sertçe iki kere vurmak", derece: "orta" },
-                { metin: "Tahtaya format atmaya çalışıp işletim sistemini silmek", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Yazılıda arkadaki arkadaşın sürekli sırtına vurup cevap istiyor!",
-            secenekler: [
-                { metin: "Kağıdını çaktırmadan azıcık kenara kaydırmak", derece: "tam" },
-                { metin: "El işaretleriyle yanlış cevabı göstermek", derece: "orta" },
-                { metin: "Arkanı dönüp 'Cevap vermiyorum!' diye bağırmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Zil çaldı ve sınıf kapısının önü izdiham alanına döndü!",
-            secenekler: [
-                { metin: "Herkesin çıkmasını 1 dakika sakince beklemek", derece: "tam" },
-                { metin: "Çantanı kalkan yapıp kalabalığın arasına girmek", derece: "orta" },
-                { metin: "Pencereden atlamaya çalışmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Hoca ödev kontrolü yapıyor ve sen ödevi kesinlikle yapmadın!",
-            secenekler: [
-                { metin: "'Hocam masamdaydı, annem çantama koymayı unutmuş' demek", derece: "tam" },
-                { metin: "Yanındakinin defterini hızlıca kopyalamaya çalışmak", derece: "orta" },
-                { metin: "Hoca yaklaşınca numaradan bayılmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Yan sıradaki arkadaşın senin sıranın üzerine silgi tozu dağıttı!",
-            secenekler: [
-                { metin: "Üfleyip tozları yere düşürmek", derece: "tam" },
-                { metin: "Tozları toplayıp onun sırasına geri atmak", derece: "orta" },
-                { metin: "Onun sırasına çöp kovasını devirmek", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Fen labında hoca 'Sakın bu tüpe dokunmayın' dedi!",
-            secenekler: [
-                { metin: "Ellerini arkana bağlayıp uzaktan izlemek", derece: "tam" },
-                { metin: "Hoca bakmazken parmak ucuyla dokunmak", derece: "orta" },
-                { metin: "Tüpü çalkalayıp küçük bir patlama patlatmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Koridorda koşarken yanlışlıkla müdür yardımcısına çarptın!",
-            secenekler: [
-                { metin: "'Hocam derse yetişiyordum, çok özür dilerim' demek", derece: "tam" },
-                { metin: "Yere düşüp ayağım kırıldı numarası yapmak", derece: "orta" },
-                { metin: "'Önüne baksana hoca' demek", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Teneffüste sınıfta pet şişeyle futbol oynarken hoca içeri girdi!",
-            secenekler: [
-                { metin: "Şişeyi hemen ayağınla sıranın altına itmek", derece: "tam" },
-                { metin: "'Hocam geri dönüşüm kutusuna atıyorduk' demek", derece: "orta" },
-                { metin: "Şişeyi hocanın bacak arasından tünel atmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Çöp kovasına kağıttan basket atışı denedin ve kaçırdın!",
-            secenekler: [
-                { metin: "Hemen gidip kağıdı yerden alıp çöpe atmak", derece: "tam" },
-                { metin: "'Rüzgar savurdu hocam' demek", derece: "orta" },
-                { metin: "İkinci kağıdı çıkarıp tekrar denemek", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Derste telefonunun zil sesi son ses çalmaya başladı!",
-            secenekler: [
-                { metin: "Anında sessize alıp çantaya atmak", derece: "tam" },
-                { metin: "Yanındakine bakıp 'Kardeşim kapatsana şu telefonu' demek", derece: "orta" },
-                { metin: "Telefonu açıp 'Dersteyim anne sonra ara' demek", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Kantinde simit alacaksın ama 5 TL eksiğin var!",
-            secenekler: [
-                { metin: "Arkadaşından rica edip 5 TL borç almak", derece: "tam" },
-                { metin: "Kantinciye 'Yarın vereyim abi' demek", derece: "orta" },
-                { metin: "Tezgahtan simidi kapıp kaçmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Hoca 'Arka sıra yine çok konuşuyor!' diye bağırdı!",
-            secenekler: [
-                { metin: "Özür dileyip hemen derse odaklanmak", derece: "tam" },
-                { metin: "'Hocam dersle ilgili konuşuyorduk' demek", derece: "orta" },
-                { metin: "Ön sıradakileri gösterip suçu onlara atmak", derece: "yanlis" }
-            ]
-        },
-        {
-            soru: "Sınıf başkanı gürültü yapanların adını tahtaya yazıyor!",
-            secenekler: [
-                { metin: "Sessizce yerinde oturmak", derece: "tam" },
-                { metin: "Başkana kantinden çikolata vaat etmek", derece: "orta" },
-                { metin: "Gidip tahta silgisini çöpe atmak", derece: "yanlis" }
-            ]
-        }
-    ];
-}
-
-function soruHazirla(q) {
-    let karistirilmisSecenekler = arrayShuffle([...q.secenekler]);
-    return {
-        soru: q.soru,
-        secenekler: karistirilmisSecenekler
-    };
-}
-
+// ==========================================
+// 1. OYUN DURUMU (GAME STATE)
+// ==========================================
 let gameState = {
-    zorluk: "normal",
+    para: 100,
+    elmas: 10,
+    seviye: 1,
+    xp: 0,
     can: 100,
-    maxCan: 100,
     stres: 0,
     puan: 0,
-    kazanilanAltin: 0,
-    kazanilanElmas: 0,
-    aktifSorular: [],
-    currentIndex: 0,
-    answered: false,
-    toplamSoruSayisi: 10
+    mevcutSoruIndex: 0,
+    toplamSoruSayisi: 10,
+    zorluk: 'normal',
+    seciliKarakter: 'Normal Öğrenci'
 };
 
-window.onload = () => {
-    veriYukle();
-    lobiGuncelle();
-};
+// ==========================================
+// 2. MAĞAZA VE LİDERLİK VERİLERİ
+// ==========================================
+const karakterler = [
+    { id: 'normal', isim: 'Normal Öğrenci', fiyat: 0, birim: 'altin', aciklama: 'Dengeli istatistikler.', satinAlindi: true },
+    { id: 'inekk', isim: 'Çalışkan İnek', fiyat: 150, birim: 'altin', aciklama: 'Daha az stres kazanır.', satinAlindi: false },
+    { id: 'palyaco', isim: 'Sınıf Palyaçosu', fiyat: 200, birim: 'altin', aciklama: 'Espri gücüyle stresi hızlı düşürür.', satinAlindi: false },
+    { id: 'havali', isim: 'Arka Sıradaki Havalı', fiyat: 15, birim: 'elmas', aciklama: 'Hocalardan daha az ceza alır.', satinAlindi: false }
+];
 
-function sayfaDegis(hedefId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const hedef = document.getElementById(hedefId);
-    if (hedef) hedef.classList.add('active');
-    if (hedefId === 'shopScreen') lobiGuncelle();
-}
+const boostlar = [
+    { id: 'kahve', isim: 'Enerji İçeceği', fiyat: 30, birim: 'altin', aciklama: 'Canı +%20 yeniler.' },
+    { id: 'papatya', isim: 'Papatya Çayı', fiyat: 25, birim: 'altin', aciklama: 'Stresi -%20 azaltır.' }
+];
 
-function lobiGuncelle() {
-    document.getElementById('menuPara').innerText = playerProfile.toplamPara;
-    document.getElementById('menuElmas').innerText = playerProfile.elmas;
-    document.getElementById('menuSeviye').innerText = playerProfile.seviye;
-    document.getElementById('menuXP').innerText = playerProfile.xp;
-    document.getElementById('shopPara').innerText = playerProfile.toplamPara;
-    document.getElementById('shopElmas').innerText = playerProfile.elmas;
+const liderlikVerisi = [
+    { isim: 'Ahmet_8C', xp: 2400, seviye: 12 },
+    { isim: 'Zeynep_Pro', xp: 1950, seviye: 10 },
+    { isim: 'Efe_Kral', xp: 1600, seviye: 8 },
+    { isim: 'MehmetT', xp: 1200, seviye: 6 },
+    { isim: 'Selin_S', xp: 850, seviye: 4 }
+];
 
-    let aktifKarakterAdi = KARAKTER_TIPLERI[playerProfile.aktifKarakterId] ? KARAKTER_TIPLERI[playerProfile.aktifKarakterId].ad : "Normal Öğrenci";
-    document.getElementById('oyuncuKarakterGosterge').innerText = aktifKarakterAdi;
-
-    const charList = document.getElementById('characterShopList');
-    if (charList) {
-        charList.innerHTML = '';
-        Object.keys(KARAKTER_TIPLERI).forEach(id => {
-            let k = KARAKTER_TIPLERI[id];
-            let acik = playerProfile.acilanKarakterler.includes(id);
-            let secili = playerProfile.aktifKarakterId === id;
-
-            let div = document.createElement('div');
-            div.className = `shop-card ${secili ? 'aktif' : ''}`;
-            
-            let fiyatEtiketi = k.ciftPara ? `${k.fiyatAltin} 🪙 + ${k.fiyatElmas} 💎` : (k.fiyatAltin > 0 ? `${k.fiyatAltin} 🪙` : (k.fiyatElmas > 0 ? `${k.fiyatElmas} 💎` : "Ücretsiz"));
-            let durumYazisi = secili ? "✅ Seçili" : (acik ? "Kullan" : fiyatEtiketi);
-            
-            div.innerHTML = `<div><b>${k.ad}</b><br><small style="color:#cbd5e1">${k.aciklama}</small></div><button class="main-btn" style="width:auto; padding:8px 15px; margin:0;" onclick="karakterSecVeyaAl('${id}')">${durumYazisi}</button>`;
-            charList.appendChild(div);
-        });
-    }
-
-    const boostList = document.getElementById('boostShopList');
-    if (boostList) {
-        boostList.innerHTML = '';
-        Object.keys(BOOST_URUNLERI).forEach(key => {
-            let b = BOOST_URUNLERI[key];
-            let div = document.createElement('div');
-            div.className = 'shop-card';
-            let fiyatTxt = b.fiyatAltin > 0 ? `${b.fiyatAltin} 🪙` : `${b.fiyatElmas} 💎`;
-            let tur = b.fiyatAltin > 0 ? 'altin' : 'elmas';
-            div.innerHTML = `<div><b>${b.ad}</b><br><small style="color:#cbd5e1">${b.aciklama}</small></div><button class="main-btn" style="width:auto; padding:8px 12px; margin:0;" onclick="boostSatinAl('${key}', '${tur}')">${fiyatTxt}</button>`;
-            boostList.appendChild(div);
-        });
-    }
-}
-
-function karakterSecVeyaAl(id) {
-    let k = KARAKTER_TIPLERI[id];
-    if (playerProfile.acilanKarakterler.includes(id)) {
-        playerProfile.aktifKarakterId = id;
-        kaydet();
-        lobiGuncelle();
-    } else {
-        if (k.ciftPara) {
-            if (playerProfile.toplamPara >= k.fiyatAltin && playerProfile.elmas >= k.fiyatElmas) {
-                playerProfile.toplamPara -= k.fiyatAltin;
-                playerProfile.elmas -= k.fiyatElmas;
-            } else {
-                alert(`❌ Yetersiz bakiye!`);
-                return;
-            }
-        } else if (k.fiyatAltin > 0 && playerProfile.toplamPara >= k.fiyatAltin) {
-            playerProfile.toplamPara -= k.fiyatAltin;
-        } else if (k.fiyatElmas > 0 && playerProfile.elmas >= k.fiyatElmas) {
-            playerProfile.elmas -= k.fiyatElmas;
-        } else {
-            alert("❌ Yetersiz bakiye!");
-            return;
-        }
-        playBuySound();
-        playerProfile.acilanKarakterler.push(id);
-        playerProfile.aktifKarakterId = id;
-        kaydet();
-        lobiGuncelle();
-    }
-}
-
-function boostSatinAl(boostKey, tur) {
-    let b = BOOST_URUNLERI[boostKey];
-    if (tur === 'altin' && playerProfile.toplamPara >= b.fiyatAltin) {
-        playerProfile.toplamPara -= b.fiyatAltin;
-    } else if (tur === 'elmas' && playerProfile.elmas >= b.fiyatElmas) {
-        playerProfile.elmas -= b.fiyatElmas;
-    } else {
-        alert("❌ Yetersiz bakiye!");
-        return;
-    }
-    playBuySound();
-    playerProfile.aktifBoostlar[boostKey] = Date.now() + b.sureMs;
-    kaydet();
-    lobiGuncelle();
-}
-
-function oyunuBaslatTikla() {
-    playBuySound();
-    const modeSelect = document.getElementById('mode-select');
-    gameState.zorluk = modeSelect ? modeSelect.value : 'normal';
-    
-    if (gameState.zorluk === 'kolay') gameState.toplamSoruSayisi = 5;
-    else if (gameState.zorluk === 'normal') gameState.toplamSoruSayisi = 10;
-    else if (gameState.zorluk === 'zor') gameState.toplamSoruSayisi = 20;
-
-    let k = KARAKTER_TIPLERI[playerProfile.aktifKarakterId] || KARAKTER_TIPLERI["1"];
-    gameState.maxCan = k.maxCan;
-    if (playerProfile.aktifBoostlar["boost_elmas"]) gameState.maxCan += 20;
-    
-    gameState.can = gameState.maxCan;
-    gameState.stres = 0;
-    gameState.puan = 0;
-    gameState.kazanilanAltin = 0;
-    gameState.kazanilanElmas = 0;
-    gameState.currentIndex = 0;
-    gameState.answered = false;
-
-    let rawPool = soruBankasiOlustur();
-    let karistirilmis = arrayShuffle(rawPool).slice(0, gameState.toplamSoruSayisi);
-    gameState.aktifSorular = karistirilmis.map(q => soruHazirla(q));
-
-    sayfaDegis('quizScreen');
-    senaryoGoster();
-}
-
-function senaryoGoster() {
-    document.getElementById('scenarioBox').style.display = 'block';
-    document.getElementById('quizContentBox').style.display = 'none';
-    setTimeout(() => sorulariAc(), 1200);
-}
-
-function sorulariAc() {
-    document.getElementById('scenarioBox').style.display = 'none';
-    document.getElementById('quizContentBox').style.display = 'block';
-    updateUI();
-    soruYukle();
-}
-
-function updateUI() {
-    const livesElem = document.getElementById('livesCount');
-    if (livesElem) livesElem.innerText = `${gameState.can}/${gameState.maxCan}`;
-
-    const stressElem = document.getElementById('stressCount');
-    if (stressElem) stressElem.innerText = `%${gameState.stres}`;
-
-    const scoreElem = document.getElementById('scoreCount');
-    if (scoreElem) scoreElem.innerText = gameState.puan;
-}
-
-function soruYukle() {
-    if (gameState.currentIndex >= gameState.aktifSorular.length) {
-        oyunBitir(true, "tamamlandi");
-        return;
-    }
-    gameState.answered = false;
-    document.getElementById('nextBtn').style.display = 'none';
-    
-    let q = gameState.aktifSorular[gameState.currentIndex];
-    document.getElementById('questionNum').innerText = `Senaryo ${gameState.currentIndex + 1} / ${gameState.aktifSorular.length}`;
-    document.getElementById('questionText').innerText = q.soru;
-
-    let optList = document.getElementById('optionsList');
-    optList.innerHTML = '';
-
-    q.secenekler.forEach((secenekObj, index) => {
-        let btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerText = secenekObj.metin;
-        btn.onclick = () => secenekSec(secenekObj, btn);
-        optList.appendChild(btn);
-    });
-}
-
-function secenekSec(secenekObj, btn) {
-    if (gameState.answered) return;
-    gameState.answered = true;
-
-    let puanKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
-    let altinKatsayi = (playerProfile.aktifKarakterId === "4") ? 2 : 1;
-
-    if (secenekObj.derece === "tam") {
-        btn.style.backgroundColor = "#22c55e"; // Yeşil
-        btn.style.color = "#ffffff";
-        gameState.puan += 30 * puanKatsayi;
-        gameState.kazanilanAltin += 20 * altinKatsayi;
-        gameState.stres = Math.max(0, gameState.stres - 10);
-        if (Math.random() < 0.35) gameState.kazanilanElmas += 1;
-    } else if (secenekObj.derece === "orta") {
-        btn.style.backgroundColor = "#eab308"; // Sarı
-        btn.style.color = "#000000";
-        gameState.puan += 15 * puanKatsayi;
-        gameState.kazanilanAltin += 10 * altinKatsayi;
-        gameState.can = Math.max(0, gameState.can - 10);
-        gameState.stres = Math.min(100, gameState.stres + 10);
-    } else {
-        btn.style.backgroundColor = "#ef4444"; // Kırmızı
-        btn.style.color = "#ffffff";
-        gameState.can = Math.max(0, gameState.can - 25);
-        gameState.stres = Math.min(100, gameState.stres + 25);
-    }
-    
-    updateUI();
-
-    // Ölüm Şartları Kontrolü
-    if (gameState.can <= 0) {
-        setTimeout(() => oyunBitir(false, "can_bitti"), 1000);
-    } else if (gameState.zorluk === 'zor' && gameState.stres >= 100) {
-        setTimeout(() => oyunBitir(false, "stres_krizi"), 1000);
-    } else if (gameState.currentIndex < gameState.aktifSorular.length - 1) {
-        document.getElementById('nextBtn').style.display = 'block';
-    } else {
-        setTimeout(() => oyunBitir(true, "tamamlandi"), 1000);
-    }
-}
-
-function sonrakiSoruTikla() {
-    gameState.currentIndex++;
-    soruYukle();
-}
-
-function oyunBitir(basarili, neden) {
-    sayfaDegis('gameOverScreen');
-    
-    const scoreElem = document.getElementById('finalScore');
-    if (scoreElem) scoreElem.innerText = gameState.puan;
-
-    playerProfile.toplamPara += gameState.kazanilanAltin;
-    playerProfile.elmas += gameState.kazanilanElmas;
-    playerProfile.xp += gameState.puan;
-
-    if (playerProfile.xp >= playerProfile.seviye * 100) {
-        playerProfile.seviye += 1;
-        alert("🎉 Seviye atladın!");
-    }
-    
-    kaydet();
-
-    const titleElem = document.getElementById('endTitle');
-    const msgElem = document.getElementById('endMessage');
-
-    if (basarili) {
-        if (titleElem) titleElem.innerText = "🏫 Zil Çaldı, Günü Kurtardın! 🎉";
-        if (msgElem) msgElem.innerHTML = `Tebrikler!<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
-    } else {
-        if (neden === "stres_krizi") {
-            if (titleElem) titleElem.innerText = "💥 Aşırı Stres Krizine Girdin!";
-            if (msgElem) msgElem.innerHTML = `Zor modda Stres Barın %100 oldu ve derste fenalaştın!<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
-        } else {
-            if (titleElem) titleElem.innerText = "😵 Disipline Sevk Edildin!";
-            if (msgElem) msgElem.innerHTML = `Canın tükendi ve disipline gönderildin.<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
-        }
-    }
-}
-
-function anaMenuyeDon() {
-    sayfaDegis('startScreen');
-    lobiGuncelle();
-}
+// ==========================================
+// 3. SENARYOLAR VE SONUÇLARI (HİKAYE AKIŞI)
+// ==========================================
 const senaryolar = [
     {
         soru: "Matematik hocası ansızın sözlü yapmaya karar verdi ve gözlerini sınıfta gezdirmeye başladı!",
@@ -548,23 +50,580 @@ const senaryolar = [
                 can: 0,
                 stres: 10,
                 puan: 15,
-                sonuc: "🙈 Hoca seni fark etmedi ve yan sıradaki arkadaşını kaldırdı! Kıl payı kurtuldun ama stresin biraz arttı."
+                sonuc: "🙈 Hoca seni fark etmedi ve yan sıradaki arkadaşını kaldırdı! Kıl payı kurtuldun ama gerginlikten stresin arttı."
             },
             {
                 metin: "Kendinden emin bir şekilde hocanın gözlerinin içine bak.",
                 can: -15,
                 stres: 20,
                 puan: 30,
-                sonuc: "👨‍🏫 Hoca özgüvenine hayran kaldı ama seni tahtaya kaldırdı! Soruyu tam çözemeyince hocanın gözünden biraz düştün."
+                sonuc: "👨‍🏫 Hoca özgüvenine hayran kaldı ama seni tahtaya kaldırdı! Soruda biraz bocalayınca azarı yedin."
             },
             {
                 metin: "Arka sıradaki arkadaşının arkasına saklan.",
                 can: -5,
                 stres: 5,
                 puan: 5,
-                sonuc: "😅 Saklandığını gören hoca hafifçe gülümsedi ama şimdilik pas geçti. Yine de karizmayı biraz çizdirdin."
+                sonuc: "😅 Saklandığını gören hoca hafifçe gülümsedi ama pas geçti. Karizmayı biraz çizdirdin."
+            }
+        ]
+    },
+    {
+        soru: "Kantin sırasında biri önün geçti ve 'Arkadaşıma sıra tutuyordum' dedi.",
+        secenekler: [
+            {
+                metin: "Sertçe uyar ve sıranın arkasına geçmesini söyle.",
+                can: -10,
+                stres: 15,
+                puan: 20,
+                sonuc: "🗣️ Sözlü tartışma çıktı! Kantinci araya girdi, hakkını savundun ama boş yere sinirlendin."
+            },
+            {
+                metin: "Görmezden gel, sabırla bekle.",
+                can: 0,
+                stres: 10,
+                puan: 5,
+                sonuc: "🍞 İçine attın ama tostunu alabildin. Biraz için içini yedi."
+            },
+            {
+                metin: "Kantinciye şikayet et.",
+                can: 0,
+                stres: -5,
+                puan: 15,
+                sonuc: "🤝 Kantinci adil davrandı ve kaynak yapanı sıranın en arkasına yolladı. Zafer senin!"
+            }
+        ]
+    },
+    {
+        soru: "Beden eğitimi dersinde iki kaptan takım kuruyor ve seni sona bıraktılar.",
+        secenekler: [
+            {
+                metin: "Hırslan, maçta tüm gücünü gösterip kendini kanıtla.",
+                can: -15,
+                stres: -10,
+                puan: 35,
+                sonuc: "⚽ İnanılmaz bir performans sergiledin ve 2 gol attın! Herkes seni tebrik etti."
+            },
+            {
+                metin: "Yedek kulübesinde oturup telefonla oyna.",
+                can: 5,
+                stres: 0,
+                puan: 5,
+                sonuc: "📱 Dinlendin ve enerjini topladın ama takımdakiler biraz soğuk davrandı."
+            },
+            {
+                metin: "Kaleye geçmeyi teklif et.",
+                can: -5,
+                stres: 5,
+                puan: 20,
+                sonuc: "🧤 Özveri gösterdin, birkaç zorlu şutu çıkardın. Takım arkadaşlarının takdirini kazandın."
+            }
+        ]
+    },
+    {
+        soru: "Nöbetçi öğretmen koridorda koştuğunu gördü ve seni durdurdu!",
+        secenekler: [
+            {
+                metin: "Aptala yat: 'Hocam tuvalete yetişmeye çalışıyordum!'",
+                can: 0,
+                stres: 10,
+                puan: 10,
+                sonuc: "🚽 Öğretmen haline acıdı ve 'Bir daha koşma' diyerek bıraktı."
+            },
+            {
+                metin: "Özür dile ve hemen yavaşça yürümeye başla.",
+                can: 0,
+                stres: -5,
+                puan: 15,
+                sonuc: "👨‍🏫 Olgun davranışın öğretmenin hoşuna gitti, sorunsuz devam ettin."
+            },
+            {
+                metin: "Arkanı dönüp kaçmaya çalış.",
+                can: -25,
+                stres: 30,
+                puan: 0,
+                sonuc: "🚨 Yakalandın! Müdür yardımcısına götürüldün ve ciddi bir azar yedin."
+            }
+        ]
+    },
+    {
+        soru: "Müzik dersinde blok flüt çalma sırası sana geldi ama evde hiç çalışmadın!",
+        secenekler: [
+            {
+                metin: "Rastgele notalara basarak uydurma bir beste yap.",
+                can: -10,
+                stres: 15,
+                puan: 10,
+                sonuc: "🎶 Çıkardığın garip sesler yüzünden tüm sınıf kahkahalara boğuldu. Hoca pek memnun kalmadı."
+            },
+            {
+                metin: "Flütümü evde unuttum hocam de.",
+                can: -5,
+                stres: 5,
+                puan: 5,
+                sonuc: "📝 Hoca eksi yazdı ama rezil olmaktan kurtuldun."
+            },
+            {
+                metin: "Öksürme krizine girmiş gibi yapıp izin iste.",
+                can: 0,
+                stres: 10,
+                puan: 15,
+                sonuc: "😷 Oyunculuk yeteneğin sayesinde lavaboya gitme izni aldın. Günü kurtardın!"
+            }
+        ]
+    },
+    {
+        soru: "Sınıf başkanı gürültü yapanların adını tahtaya yazıyor. Senin adını da yazdı!",
+        secenekler: [
+            {
+                metin: "Gidip adını tahtadan sil.",
+                can: -15,
+                stres: 20,
+                puan: 10,
+                sonuc: "✏️ Sınıf başkanıyla kavga ettin, durum hoca gelince daha da büyüdü."
+            },
+            {
+                metin: "Sessizce oturup hocaya durumu açıklayacağını söyle.",
+                can: 0,
+                stres: 5,
+                puan: 20,
+                sonuc: "🤝 Sakin kaldın. Hoca gelince durum anlaşıldı ve adın çizildi."
+            },
+            {
+                metin: "Sınıf başkanına çikolata ısmarlama teklif et.",
+                can: -5,
+                stres: -5,
+                puan: 15,
+                sonuc: "🍫 Rüşvet işe yaradı! Adın tahtadan gizlice silindi."
+            }
+        ]
+    },
+    {
+        soru: "Türkçe dersinde öğretmen serbest okuma saatinde kitap okumanızı söyledi.",
+        secenekler: [
+            {
+                metin: "Gerçekten kitap oku.",
+                can: 5,
+                stres: -15,
+                puan: 25,
+                sonuc: "📚 Zihnin dinlendi, stresin azaldı ve hocanın takdirini kazandın."
+            },
+            {
+                metin: "Kitabın arasına karikatür/çizgi roman saklayıp oku.",
+                can: 0,
+                stres: 10,
+                puan: 15,
+                sonuc: "🎨 Eğlendin ama sürekli yakalanma korkusu yaşadın."
+            },
+            {
+                metin: "Kitabı yüzüne siper edip uyu.",
+                can: 10,
+                stres: 5,
+                puan: 0,
+                sonuc: "😴 Güzel bir uyku çektin ama hoca sıraya vurarak seni uyandırdı!"
+            }
+        ]
+    },
+    {
+        soru: "Okul çıkışında arkadaşlarından biri 'İnternet kafeye gidelim mi?' dedi.",
+        secenekler: [
+            {
+                metin: "Kabul et, oyuna akın!",
+                can: -10,
+                stres: -25,
+                puan: 30,
+                sonuc: "🎮 Bütün stresi oyunda attınız, harika zaman geçirdin!"
+            },
+            {
+                metin: "Ödevlerim var diyerek eve git.",
+                can: 10,
+                stres: 5,
+                puan: 20,
+                sonuc: "🏠 Eve gidip ödevlerini hallettin, için rahat etti."
+            },
+            {
+                metin: "Kütüphaneye gidip beraber ders çalışmayı teklif et.",
+                can: -5,
+                stres: 10,
+                puan: 35,
+                sonuc: "✍️ Arkadaşların önce mızmızlandı ama sonra verimli bir çalışma oldu."
+            }
+        ]
+    },
+    {
+        soru: "Fen Laboratuvarında öğretmen deney tüplerine dokunmayın dedi ama çok merak ediyorsun.",
+        secenekler: [
+            {
+                metin: "Tüpleri gizlice karıştır.",
+                can: -30,
+                stres: 25,
+                puan: 5,
+                sonuc: "💥 Tüpten kötü bir koku ve duman çıktı! Laboratuvar tahliye edildi, disiplinlik oldun!"
+            },
+            {
+                metin: "Sadece uzaktan incele ve soru sor.",
+                can: 0,
+                stres: -5,
+                puan: 25,
+                sonuc: "🔬 Öğretmen ilgini sevdi ve sana ekstra sözlü puanı verdi."
+            },
+            {
+                metin: "Arkadaşını kışkırt: 'Kanka dokunsana bir şey olmaz.'",
+                can: 0,
+                stres: 15,
+                puan: 0,
+                sonuc: "😈 Arkadaşın dokundu ve azar yedi. Vicdan azabı çekiyorsun."
+            }
+        ]
+    },
+    {
+        soru: "Son ders zili çaldı, tam sınıftan çıkarken hoca 'Cuma günkü sınavı öne alıyoruz!' dedi.",
+        secenekler: [
+            {
+                metin: "Tüm sınıf adına itiraz et.",
+                can: -10,
+                stres: 15,
+                puan: 30,
+                sonuc: "📢 Sınıfın kahramanı oldun ama hoca kararından dönmedi."
+            },
+            {
+                metin: "Sessizce kabul et ve eve gidip çalışmaya karar ver.",
+                can: -5,
+                stres: 5,
+                puan: 20,
+                sonuc: "🧠 Gerçekçi davrandın, planlı hareket etmek seni rahatlattı."
+            },
+            {
+                metin: "Derin bir 'Oofff' çek.",
+                can: -5,
+                stres: 10,
+                puan: 5,
+                sonuc: "😮‍💨 Hoca sana sert bir bakış attı ama bir şey demedi."
             }
         ]
     }
-    // Diğer senaryolar da bu yapıda olacak...
 ];
+
+// ==========================================
+// 4. EKRAN VE ARAYÜZ YÖNETİMİ
+// ==========================================
+function sayfaDegis(targetScreenId) {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => screen.classList.remove('active'));
+
+    const activeScreen = document.getElementById(targetScreenId);
+    if (activeScreen) {
+        activeScreen.classList.add('active');
+    }
+    updateUI();
+}
+
+function updateUI() {
+    // Menu Bilgileri
+    document.getElementById('menuPara').innerText = gameState.para;
+    document.getElementById('menuElmas').innerText = gameState.elmas;
+    document.getElementById('menuSeviye').innerText = gameState.seviye;
+    document.getElementById('menuXP').innerText = gameState.xp;
+    document.getElementById('oyuncuKarakterGosterge').innerText = gameState.seciliKarakter;
+
+    // Oyun İçi Üst Bar (Yüzdelik Format)
+    const livesElem = document.getElementById('livesCount');
+    if (livesElem) livesElem.innerText = `%${gameState.can}`;
+
+    const stressElem = document.getElementById('stressCount');
+    if (stressElem) stressElem.innerText = `%${gameState.stres}`;
+
+    const scoreElem = document.getElementById('scoreCount');
+    if (scoreElem) scoreElem.innerText = gameState.puan;
+
+    // Mağaza
+    const shopPara = document.getElementById('shopPara');
+    if (shopPara) shopPara.innerText = gameState.para;
+
+    const shopElmas = document.getElementById('shopElmas');
+    if (shopElmas) shopElmas.innerText = gameState.elmas;
+}
+
+// ==========================================
+// 5. OYUN AKIŞ MANTIĞI (GAMEPLAY)
+// ==========================================
+function oyunuBaslatTikla() {
+    const zorlukSecimi = document.getElementById('mode-select').value;
+    gameState.zorluk = zorlukSecimi;
+
+    if (zorlukSecimi === 'kolay') gameState.toplamSoruSayisi = 5;
+    else if (zorlukSecimi === 'normal') gameState.toplamSoruSayisi = 10;
+    else if (zorlukSecimi === 'zor') gameState.toplamSoruSayisi = 20;
+
+    gameState.can = 100;
+    gameState.stres = 0;
+    gameState.puan = 0;
+    gameState.mevcutSoruIndex = 0;
+
+    sayfaDegis('quizScreen');
+    soruYukle();
+}
+
+function soruYukle() {
+    // Sonuç kutusunu gizle, şıklar kutusunu aç
+    const sonucKutusu = document.getElementById('resultOutcomeBox');
+    if (sonucKutusu) sonucKutusu.style.display = 'none';
+
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('optionsList').style.display = 'block';
+
+    const soruData = senaryolar[gameState.mevcutSoruIndex];
+    document.getElementById('questionNum').innerText = `Senaryo ${gameState.mevcutSoruIndex + 1} / ${gameState.toplamSoruSayisi}`;
+    document.getElementById('questionText').innerText = soruData.soru;
+
+    const optionsList = document.getElementById('optionsList');
+    optionsList.innerHTML = '';
+
+    soruData.secenekler.forEach((secenek, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = secenek.metin;
+        btn.onclick = () => secimYap(index);
+        optionsList.appendChild(btn);
+    });
+}
+
+function secimYap(secenekIndex) {
+    const mevcutSenaryo = senaryolar[gameState.mevcutSoruIndex];
+    const secim = mevcutSenaryo.secenekler[secenekIndex];
+
+    // 1. Etkileri uygula
+    gameState.can += secim.can;
+    gameState.stres += secim.stres;
+    gameState.puan += secim.puan;
+
+    // Sınır kontrolleri (%0 - %100)
+    if (gameState.can > 100) gameState.can = 100;
+    if (gameState.stres < 0) gameState.stres = 0;
+
+    updateUI();
+
+    // 2. Şıkları Gizle
+    document.getElementById('optionsList').style.display = 'none';
+
+    // 3. Hikaye Devamı (Sonuç) Kutusunu Olustur/Goster
+    let sonucKutusu = document.getElementById('resultOutcomeBox');
+    if (!sonucKutusu) {
+        sonucKutusu = document.createElement('div');
+        sonucKutusu.id = 'resultOutcomeBox';
+        document.getElementById('quizContentBox').insertBefore(sonucKutusu, document.getElementById('nextBtn'));
+    }
+
+    // Etki Değişim Özetini Hazırla
+    let etkiOzeti = [];
+    if (secim.puan !== 0) etkiOzeti.push(`${secim.puan > 0 ? '+' : ''}${secim.puan} Puan`);
+    if (secim.can !== 0) etkiOzeti.push(`${secim.can > 0 ? '' : ''}${secim.can}% Can`);
+    if (secim.stres !== 0) etkiOzeti.push(`${secim.stres > 0 ? '+' : ''}${secim.stres}% Stres`);
+
+    sonucKutusu.innerHTML = `
+        <div style="background: #334155; padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #3b82f6;">
+            <p style="font-size: 1.05em; line-height: 1.4; margin-bottom: 10px; color: #f8fafc;">${secim.sonuc}</p>
+            <small style="color: #cbd5e1; font-weight: bold;">Etkiler: ${etkiOzeti.join(' | ') || 'Etki Yok'}</small>
+        </div>
+    `;
+    sonucKutusu.style.display = 'block';
+
+    // 4. Ölüm veya Yenilgi Kontrolü
+    if (gameState.can <= 0) {
+        oyunuBitir(false, "❤️ Canın bitti! Okul hayatının stresi seni pes ettirdi.");
+        return;
+    }
+    if (gameState.zorluk === 'zor' && gameState.stres >= 100) {
+        oyunuBitir(false, "🤯 Aşırı stresten bayıldın! Revire kaldırıldın.");
+        return;
+    }
+
+    // 5. İlerleme Butonunu Göster
+    document.getElementById('nextBtn').style.display = 'block';
+}
+
+function sonrakiSoruTikla() {
+    gameState.mevcutSoruIndex++;
+
+    if (gameState.mevcutSoruIndex >= gameState.toplamSoruSayisi || gameState.mevcutSoruIndex >= senaryolar.length) {
+        oyunuBitir(true, "🎉 Tebrikler! Tüm senaryoları başarıyla tamamladın.");
+    } else {
+        soruYukle();
+    }
+}
+
+function oyunuBitir(kazandi, mesaj) {
+    const endTitle = document.getElementById('endTitle');
+    const endMessage = document.getElementById('endMessage');
+    const finalScore = document.getElementById('finalScore');
+
+    if (kazandi) {
+        endTitle.innerText = "🏆 Başarılı!";
+        endTitle.style.color = "#22c55e";
+
+        // Kazanılan Ödüller
+        const kazanilanXP = gameState.puan * 2;
+        const kazanilanPara = Math.floor(gameState.puan / 2);
+
+        gameState.xp += kazanilanXP;
+        gameState.para += kazanilanPara;
+
+        // Seviye Atlama Kontrolü
+        if (gameState.xp >= gameState.seviye * 100) {
+            gameState.seviye++;
+            mesaj += `<br><br>🌟 <b>SEVİYE ATLADIN! Yeni Seviye: ${gameState.seviye}</b>`;
+        }
+
+        endMessage.innerHTML = `${mesaj}<br><br><b>Kazanılan Ödüller:</b><br>🪙 +${kazanilanPara} Altın<br>🔥 +${kazanilanXP} XP`;
+    } else {
+        endTitle.innerText = "💀 Oyun Bitti";
+        endTitle.style.color = "#ef4444";
+        endMessage.innerText = mesaj;
+    }
+
+    finalScore.innerText = gameState.puan;
+    sayfaDegis('gameOverScreen');
+}
+
+function anaMenuyeDon() {
+    sayfaDegis('startScreen');
+}
+
+// ==========================================
+// 6. MAĞAZA İŞLEMLERİ
+// ==========================================
+function magazayiYukle() {
+    const charList = document.getElementById('characterShopList');
+    if (!charList) return;
+
+    charList.innerHTML = '';
+    karakterler.forEach(char => {
+        const card = document.createElement('div');
+        card.className = `shop-card ${gameState.seciliKarakter === char.isim ? 'aktif' : ''}`;
+
+        let butonKodu = '';
+        if (char.satinAlindi) {
+            if (gameState.seciliKarakter === char.isim) {
+                butonKodu = `<button style="background: #22c55e; border:none; color:white; padding: 6px 12px; border-radius:6px; font-weight:bold;">Seçili</button>`;
+            } else {
+                butonKodu = `<button onclick="karakterSec('${char.isim}')" style="background: #3b82f6; border:none; color:white; padding: 6px 12px; border-radius:6px; cursor:pointer;">Seç</button>`;
+            }
+        } else {
+            const sembol = char.birim === 'altin' ? '🪙' : '💎';
+            butonKodu = `<button onclick="karakterSatinal('${char.id}')" style="background: #eab308; border:none; color:black; padding: 6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">Satın Al (${sembol}${char.fiyat})</button>`;
+        }
+
+        card.innerHTML = `
+            <div>
+                <div style="font-weight:bold;">${char.isim}</div>
+                <small style="color: #94a3b8;">${char.aciklama}</small>
+            </div>
+            <div>${butonKodu}</div>
+        `;
+        charList.appendChild(card);
+    });
+
+    // Boostlar Listesi
+    const boostList = document.getElementById('boostShopList');
+    if (!boostList) return;
+
+    boostList.innerHTML = '';
+    boostlar.forEach(b => {
+        const card = document.createElement('div');
+        card.className = 'shop-card';
+        card.innerHTML = `
+            <div>
+                <div style="font-weight:bold;">${b.isim}</div>
+                <small style="color: #94a3b8;">${b.aciklama}</small>
+            </div>
+            <div>
+                <button onclick="boostSatinal('${b.id}')" style="background: #eab308; border:none; color:black; padding: 6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">Satın Al (🪙${b.fiyat})</button>
+            </div>
+        `;
+        boostList.appendChild(card);
+    });
+}
+
+function karakterSatinal(id) {
+    const char = karakterler.find(c => c.id === id);
+    if (!char) return;
+
+    if (char.birim === 'altin' && gameState.para >= char.fiyat) {
+        gameState.para -= char.fiyat;
+        char.satinAlindi = true;
+        karakterSec(char.isim);
+        alert(`${char.isim} satın alındı!`);
+    } else if (char.birim === 'elmas' && gameState.elmas >= char.fiyat) {
+        gameState.elmas -= char.fiyat;
+        char.satinAlindi = true;
+        karakterSec(char.isim);
+        alert(`${char.isim} satın alındı!`);
+    } else {
+        alert("Yetersiz bakiye!");
+    }
+    magazayiYukle();
+    updateUI();
+}
+
+function karakterSec(isim) {
+    gameState.seciliKarakter = isim;
+    magazayiYukle();
+    updateUI();
+}
+
+function boostSatinal(id) {
+    const boost = boostlar.find(b => b.id === id);
+    if (!boost) return;
+
+    if (gameState.para >= boost.fiyat) {
+        gameState.para -= boost.fiyat;
+        if (id === 'kahve') {
+            gameState.can = Math.min(100, gameState.can + 20);
+            alert("Kahve içtin! Canın %20 arttı.");
+        } else if (id === 'papatya') {
+            gameState.stres = Math.max(0, gameState.stres - 20);
+            alert("Papatya çayı içtin! Stresin %20 azaldı.");
+        }
+    } else {
+        alert("Yetersiz Altın!");
+    }
+    updateUI();
+}
+
+// ==========================================
+// 7. LİDERLİK TABLOSU VE DESTEK
+// ==========================================
+function liderlikAc() {
+    sayfaDegis('leaderboardScreen');
+    const tbody = document.getElementById('leaderboardBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    // Kendi skorumuzu da ekleyelim
+    const liste = [...liderlikVerisi, { isim: 'SEN', xp: gameState.xp, seviye: gameState.seviye }];
+    liste.sort((a, b) => b.xp - a.xp);
+
+    liste.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        if (item.isim === 'SEN') tr.style.color = '#3b82f6';
+        tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.isim}</td>
+            <td>${item.xp}</td>
+            <td>${item.seviye}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openSupport() {
+    alert("📧 Destek ve Geri Bildirim\n\nHer türlü soru ve önerileriniz için okul simülatörü geliştirici ekibiyle iletişime geçebilirsiniz.");
+}
+
+// ==========================================
+// 8. İLK YÜKLEME (INIT)
+// ==========================================
+window.onload = function() {
+    updateUI();
+    magazayiYukle();
+};
