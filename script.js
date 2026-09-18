@@ -85,7 +85,6 @@ function arrayShuffle(dizi) {
     return kopya;
 }
 
-// --- 50 ADET EĞLENCELİ 8-C OKUL SENARYOSU ---
 function soruBankasiOlustur() {
     return [
         { soru: "Derse 5 dakika geç kaldın ve hoca kapıda dikiliyor! Ne yaparsın?", secenekler: ["'Hocam revirdeydim kan verdim' demek", "Sessizce arkadan içeri sızmak", "Kantine kaçıp tost yemek", "Kapıda bekleyip ağlamak"], cevap: 0 },
@@ -137,7 +136,7 @@ function soruBankasiOlustur() {
         { soru: "Okul meclis başkanlığı seçimleri başladı!", secenekler: ["'Okula serbest kıyafet getireceğim' deyip tutamayacağın vaatler vermek", "Kantin fiyatlarını düşüreceğim demek", "Aday olmamak", "Arkadaşına oy toplamak"], cevap: 0 },
         { soru: "Hoca masada uyuklamaya başladı!", secenekler: ["Sınıfça çıt çıkarmayıp dersin bitmesini beklemek", "Masaya vurup hocayı uyandırmak", "Sınıftan gizlice çıkmak", "Hocanın fotoğrafını çekmek"], cevap: 0 },
         { soru: "Beden eğitimi öğretmeninin düdüğünü çaldın ve yakalandın!", secenekler: ["'Hocam düdük kendiliğinden öttü vallahi' demek", "Özür dileyip 10 tur tur koşmak", "Düdüğü yere atıp kaçmak", "Düdüğü arkadaşına vermek"], cevap: 0 },
-        { soru: "Okulun son günü karneler dağıtılıyor!", secenekler: ["Belgeyi çantaya atıp 'Tatil başladı!' diye çığlık atarak kaçmak", "Okul bahçesinde arkadaşlarınla vedalaşmak", "Karneye bakmadan eve gitmek", "Hocalarla helalleşmek"], cevap: 0 }
+        { soru: "Okulın son günü karneler dağıtılıyor!", secenekler: ["Belgeyi çantaya atıp 'Tatil başladı!' diye çığlık atarak kaçmak", "Okul bahçesinde arkadaşlarınla vedalaşmak", "Karneye bakmadan eve gitmek", "Hocalarla helalleşmek"], cevap: 0 }
     ];
 }
 
@@ -156,6 +155,7 @@ function soruHazirla(q) {
 let gameState = {
     zorluk: "normal",
     can: 3,
+    stres: 0,
     puan: 0,
     kazanilanAltin: 0,
     kazanilanElmas: 0,
@@ -319,6 +319,7 @@ function oyunuBaslatTikla() {
     gameState.can = (playerProfile.aktifKarakterId === "4") ? 5 : 3;
     if (playerProfile.aktifBoostlar["boost_elmas"]) gameState.can += 1;
 
+    gameState.stres = 0;
     gameState.puan = 0;
     gameState.kazanilanAltin = 0;
     gameState.kazanilanElmas = 0;
@@ -347,13 +348,19 @@ function sorulariAc() {
 }
 
 function updateUI() {
-    document.getElementById('livesCount').innerText = gameState.can;
-    document.getElementById('scoreCount').innerText = gameState.puan;
+    const livesElem = document.getElementById('livesCount');
+    if (livesElem) livesElem.innerText = gameState.can;
+
+    const stressElem = document.getElementById('stressCount');
+    if (stressElem) stressElem.innerText = `%${gameState.stres}`;
+
+    const scoreElem = document.getElementById('scoreCount');
+    if (scoreElem) scoreElem.innerText = gameState.puan;
 }
 
 function soruYukle() {
     if (gameState.currentIndex >= gameState.aktifSorular.length) {
-        oyunBitir(true);
+        oyunBitir(true, "tamamlandi");
         return;
     }
     gameState.answered = false;
@@ -388,6 +395,7 @@ function secenekSec(secilenIndex, btn) {
         btn.classList.add('correct');
         gameState.puan += 20 * puanKatsayi;
         gameState.kazanilanAltin += 15 * altinKatsayi;
+        gameState.stres = Math.max(0, gameState.stres - 10);
         if (Math.random() < 0.3) gameState.kazanilanElmas += 1;
     } else {
         btn.classList.add('wrong');
@@ -395,15 +403,19 @@ function secenekSec(secilenIndex, btn) {
             allBtns[q.cevap].classList.add('correct');
         }
         gameState.can -= 1;
+        gameState.stres = Math.min(100, gameState.stres + 25);
     }
     updateUI();
 
+    // Ölüm Şartları Kontrolü
     if (gameState.can <= 0) {
-        setTimeout(() => oyunBitir(false), 1000);
+        setTimeout(() => oyunBitir(false, "can_bitti"), 1000);
+    } else if (gameState.zorluk === 'zor' && gameState.stres >= 100) {
+        setTimeout(() => oyunBitir(false, "stres_krizi"), 1000);
     } else if (gameState.currentIndex < gameState.aktifSorular.length - 1) {
         document.getElementById('nextBtn').style.display = 'block';
     } else {
-        setTimeout(() => oyunBitir(true), 1000);
+        setTimeout(() => oyunBitir(true, "tamamlandi"), 1000);
     }
 }
 
@@ -412,7 +424,7 @@ function sonrakiSoruTikla() {
     soruYukle();
 }
 
-function oyunBitir(basarili) {
+function oyunBitir(basarili, neden) {
     sayfaDegis('gameOverScreen');
     
     const scoreElem = document.getElementById('finalScore');
@@ -429,12 +441,20 @@ function oyunBitir(basarili) {
     
     kaydet();
 
+    const titleElem = document.getElementById('endTitle');
+    const msgElem = document.getElementById('endMessage');
+
     if (basarili) {
-        document.getElementById('endTitle').innerText = "🏫 Zil Çaldı, Günü Kurtardın! 🎉";
-        document.getElementById('endMessage').innerHTML = `Tebrikler!<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
+        if (titleElem) titleElem.innerText = "🏫 Zil Çaldı, Günü Kurtardın! 🎉";
+        if (msgElem) msgElem.innerHTML = `Tebrikler!<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
     } else {
-        document.getElementById('endTitle').innerText = "😵 Disipline Sevk Edildin!";
-        document.getElementById('endMessage').innerHTML = `Canın tükendi.<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
+        if (neden === "stres_krizi") {
+            if (titleElem) titleElem.innerText = "💥 Aşırı Stres Krizine Girdin!";
+            if (msgElem) msgElem.innerHTML = `Zor modda Stres Barın %100 oldu ve derste bayıldın!<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
+        } else {
+            if (titleElem) titleElem.innerText = "😵 Disipline Sevk Edildin!";
+            if (msgElem) msgElem.innerHTML = `Canın tükendi ve disipline gönderildin.<br>🪙 +${gameState.kazanilanAltin} Altın<br>💎 +${gameState.kazanilanElmas} Elmas`;
+        }
     }
 }
 
